@@ -1,0 +1,40 @@
+{
+  "name": "gbese-backend",
+  "version": "1.0.0",
+  "description": "A fintech app that allows you to transfer your debt to someone",
+  "keywords": [
+    "fintech",
+    "debt",
+    "transfer"
+  ],
+  "homepage": "https://github.com/jvstln/gbese-backend#readme",
+  "bugs": {
+    "url": "https://github.com/jvstln/gbese-backend/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jvstln/gbese-backend.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "main": "build/app.js",
+  "scripts": {
+    "dev": "nodemon src/app.ts"
+  },
+  "dependencies": {
+    "@types/cookie-parser": "^1.4.8",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "mongoose": "^8.13.2"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.1",
+    "@types/node": "^22.14.1",
+    "nodemon": "^3.1.9",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
+  }
+}
