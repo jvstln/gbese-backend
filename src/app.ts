@@ -1,8 +1,8 @@
 import "dotenv/config";
 import express from "express";
-import { middlewareRouter } from "./index.middleware";
-import { indexRouter } from "./index.route";
-import { connectToDb } from "./lib/db";
+import { middlewareRouter } from "./middlewares/index.middleware";
+import { indexRouter } from "./routes/index.route";
+import { connectToDb } from "./utils/db";
 
 const PORT = process.env.PORT || 5000;
 
