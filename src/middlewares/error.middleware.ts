@@ -1,5 +1,6 @@
 import { APIError } from "better-auth/api";
 import { Request, Response, NextFunction } from "express";
+import { MulterError } from "multer";
 
 export const errorMiddleware = (
   error: unknown,
@@ -17,6 +18,14 @@ export const errorMiddleware = (
     res.status(error.statusCode).json({
       success: false,
       ...error.body,
+    });
+    return;
+  }
+
+  if (error instanceof MulterError) {
+    res.status(400).json({
+      success: false,
+      message: `${error.message} : ${error.field}`,
     });
     return;
   }

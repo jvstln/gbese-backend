@@ -1,3 +1,4 @@
+import { Request } from "express";
 import { Login, Signup, VerifyEmail } from "../types/auth.type";
 import { auth } from "../utils/auth";
 
@@ -28,6 +29,18 @@ class AuthService {
       query: data,
     });
     return response;
+  }
+
+  async getSession(requestObject: Request) {
+    const requestHeaders = new Headers();
+
+    requestObject.rawHeaders.forEach((value, index) => {
+      if (index % 2 === 0) {
+        requestHeaders.append(value, requestObject.rawHeaders[index + 1]);
+      }
+    });
+
+    return auth.api.getSession({ headers: requestHeaders });
   }
 }
 

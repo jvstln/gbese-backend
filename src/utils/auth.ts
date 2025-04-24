@@ -29,6 +29,7 @@ export const auth = betterAuth({
     autoSignInAfterVerification: true,
   },
   user: {
+    modelName: "users",
     additionalFields: {
       firstName: {
         type: "string",
