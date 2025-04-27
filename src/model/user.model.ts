@@ -28,6 +28,21 @@ const addressSchema = new Schema<Address>({
 });
 
 const userSchema = new Schema<User>({
+  firstName: {
+    type: String,
+    required: [true, "Firstname is required"],
+    minLength: [3, "Firstname must be at least 3 characters long"],
+  },
+  lastName: {
+    type: String,
+    required: [true, "Lastname is required"],
+    minLength: [3, "Lastname must be at least 3 characters long"],
+  },
+  email: {
+    type: String,
+    required: [true, "Email is required"],
+    unique: [true, "Email already exists"],
+  },
   phone: {
     type: String,
     required: [true, "Phone number is required"],

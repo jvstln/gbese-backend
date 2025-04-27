@@ -22,10 +22,10 @@ export const errorMiddleware = (
     return;
   }
 
-  if (error instanceof MulterError) {
+  if (error instanceof MulterError && error.code === "LIMIT_UNEXPECTED_FILE") {
     res.status(400).json({
       success: false,
-      message: `${error.message} : ${error.field}`,
+      message: `Unknown file field "${error.field}" is not allowed`,
     });
     return;
   }

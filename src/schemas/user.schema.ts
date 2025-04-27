@@ -1,10 +1,9 @@
 import Joi from "joi";
 import { identityDocumentTypes } from "../types/user.type";
 
-export const userSchema = Joi.object({
+export const userUpdateSchema = Joi.object({
   firstName: Joi.string().min(3).max(40),
   lastName: Joi.string().min(3).max(40),
-  email: Joi.string().email(),
   phone: Joi.string().length(11),
   address: Joi.object({
     number: Joi.string(),
@@ -12,8 +11,11 @@ export const userSchema = Joi.object({
     town: Joi.string(),
     state: Joi.string(),
   }),
-  dateOfBirth: Joi.date(),
-  identityDocumentUrl: Joi.custom((file) => {
+  dateOfBirth: Joi.date()
+    .iso()
+    .less("now")
+    .messages({ "date.less": "dateOfBirth must be in the past" }),
+  identityDocument: Joi.custom((file: Express.Multer.File) => {
     const validMimeTypes = /image\/(jpeg|png|jpg|webp)|application\/pdf/;
 
     // 5mb in bytes
