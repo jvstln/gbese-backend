@@ -19,7 +19,9 @@
   "author": "",
   "main": "build/app.js",
   "scripts": {
-    "dev": "nodemon src/app.ts"
+    "dev": "nodemon src/app.ts",
+    "build": "tsc",
+    "start": "node build/app.js"
   },
   "dependencies": {
     "@types/cookie-parser": "^1.4.8",
