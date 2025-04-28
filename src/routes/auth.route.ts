@@ -16,4 +16,4 @@ authRouter.post(
   validationMiddleware.validateBody(loginSchema),
   authController.login
 );
-authRouter.post("/verify-email", authController.verifyEmail);
+authRouter.get("/verify-email", authController.verifyEmail);

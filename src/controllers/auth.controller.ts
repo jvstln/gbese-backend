@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { Request, Response } from "express";
 import { APIError } from "better-auth/api";
 import { VerifyEmail } from "../types/auth.type";
@@ -32,38 +33,18 @@ class AuthController {
   async verifyEmail(req: Request<{}, {}, {}, VerifyEmail>, res: Response) {
     try {
       const response = await authService.verifyEmail(req.query);
+      console.log("Email verification successful");
 
-      if (!response?.status) {
-        throw new APIError(StatusCodes.BAD_REQUEST, {
-          message: "Error verifying email",
-        });
-      }
-
-      res.json({
-        success: true,
-        message: "Email verified successfully",
-        data: response.user,
-      });
+      res.render("successful-email-verification");
     } catch (error) {
-      if (!(error instanceof APIError)) throw error;
-
-      if (
-        (error.headers as Headers)
-          .get("set-cookie")
-          ?.includes("better-auth.session_token")
-      ) {
-        throw new APIError(200, {
-          success: true,
-          message: "Email verified successfully",
-        });
-      }
-
-      throw new APIError(error.status, {
+      console.log("Error verifying email", error);
+      res.render("failed-email-verification", {
         message:
-          (error.headers as Headers)
-            .get("location")
-            ?.split("=")[1]
-            ?.toUpperCase() ?? "Error verifying email",
+          error instanceof APIError
+            ? error.body?.message
+            : error instanceof Error
+            ? error?.message
+            : "",
       });
     }
   }

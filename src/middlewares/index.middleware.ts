@@ -14,3 +14,4 @@ middlewareRouter.use(
 middlewareRouter.use(express.json());
 middlewareRouter.use(express.urlencoded());
 middlewareRouter.use(cookieParser());
+middlewareRouter.use("/public", express.static("public"));

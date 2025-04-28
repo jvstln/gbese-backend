@@ -22,8 +22,14 @@ export const auth = betterAuth({
       await sendEmail({
         to: user.email,
         subject: "Verify your email address",
-        html: verifyEmailHTMLTemplate({ name: user.name, url }),
-        text: verifyEmailTextTemplate({ name: user.name, url }),
+        html: verifyEmailHTMLTemplate({
+          name: user.name,
+          url: `${process.env.BASE_URL}/api/v1/auth/verify-email?token=${token}`,
+        }),
+        text: verifyEmailTextTemplate({
+          name: user.name,
+          url: `${process.env.BASE_URL}/api/v1/auth/verify-email?token=${token}`,
+        }),
       });
     },
     autoSignInAfterVerification: true,
