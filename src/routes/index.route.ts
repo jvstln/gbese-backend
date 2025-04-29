@@ -1,6 +1,8 @@
 import { Router } from "express";
 import { authRouter } from "./auth.route";
 import { userRouter } from "./user.route";
+import { debtTransferRouter } from "./debt.route";
+
 
 export const indexRouter = Router();
 
@@ -11,3 +13,5 @@ indexRouter.get("", (req, res) => {
 indexRouter.use("/auth", authRouter);
 
 indexRouter.use("/users", userRouter);
+
+indexRouter.use("/debt-transfers", debtTransferRouter);

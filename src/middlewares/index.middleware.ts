@@ -12,5 +12,5 @@ middlewareRouter.use(
   })
 );
 middlewareRouter.use(express.json());
-middlewareRouter.use(express.urlencoded());
+middlewareRouter.use(express.urlencoded({ extended: true }));
 middlewareRouter.use(cookieParser());
