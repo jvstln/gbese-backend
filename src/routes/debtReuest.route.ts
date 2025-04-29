@@ -1,14 +1,20 @@
 import { Router } from "express";
 import {
   createDebtRequest,
-  getUserCreatedDebtRequests,
   getAllDebtRequests,
+  getUserDebtRequests,
   updateDebtRequest,
 } from "../controllers/debtRequest.controller";
+import { validationMiddleware } from "../middlewares/validation.middleware";
+import { debtRequestSchema } from "../schemas/debtRequest.schema";
 
 export const debtRequestRouter = Router();
 
-debtRequestRouter.post("/", createDebtRequest);
+debtRequestRouter.post(
+  "/",
+  validationMiddleware.validateBody(debtRequestSchema),
+  createDebtRequest
+);
 debtRequestRouter.get("/all", getAllDebtRequests);
-debtRequestRouter.get("/", getUserCreatedDebtRequests);
+debtRequestRouter.get("/", getUserDebtRequests);
 debtRequestRouter.patch("/:id", updateDebtRequest);

@@ -1,15 +1,14 @@
-import { DebtRequest, IDebtRequest } from "../model/debtRequest.model";
+import { DebtRequest } from "../model/debtRequest.model";
+import { IDebtRequest } from "../types/debtRequest.type";
 
 export const createDebtTransfer = async (data: Partial<IDebtRequest>) => {
   return await DebtRequest.create(data);
 };
 
-export const getUserDebtTransfers = async (userId: string) => {
-  return DebtRequest.find({ senderId: userId }).exec();
-};
-
-export const getAllDebtTransfers = async () => {
-  return DebtRequest.find().exec();
+export const getDebtTransfers = async (
+  filters: Record<string, unknown> = {}
+) => {
+  return DebtRequest.find(filters).exec();
 };
 
 export const updateDebtTransfer = async (

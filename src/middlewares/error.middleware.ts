@@ -1,14 +1,30 @@
 import { APIError } from "better-auth/api";
 import { Request, Response, NextFunction } from "express";
+import { Error as ErrorNamespace } from "mongoose";
 import { MulterError } from "multer";
 
 export const errorMiddleware = (
-  error: unknown,
+  error: Error,
   req: Request,
   res: Response,
   _next: NextFunction
 ) => {
-  console.log("An error occurred: ", error, error?.constructor);
+  // console.log("An error occurred: ", error);
+
+  if (error instanceof ErrorNamespace.ValidationError) {
+    let errors: Record<string, string> = {};
+
+    Object.keys(error.errors).forEach((key) => {
+      errors[key] = error.errors[key].message;
+    });
+
+    res.status(400).json({
+      success: false,
+      message: error.message,
+      errors,
+    });
+    return;
+  }
 
   if (error instanceof APIError) {
     Object.entries(error.headers).forEach(([key, value]) => {
