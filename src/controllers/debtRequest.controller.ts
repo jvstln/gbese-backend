@@ -48,9 +48,15 @@ export const getAllDebtRequests = async (_req: Request, res: Response) => {
 };
 
 export const updateDebtRequest = async (req: Request, res: Response) => {
-  const { id } = req.params;
+  const { debtRequestId } = req.params;
   const updates = req.body;
 
-  const updatedDebtTransfer = await updateDebtTransfer(id, updates);
-  res.status(200).json({ success: true, data: updatedDebtTransfer });
+  const updatedDebtTransfer = await updateDebtTransfer(debtRequestId, updates);
+  res
+    .status(200)
+    .json({
+      success: true,
+      message: "Debt request updated successfully",
+      data: updatedDebtTransfer,
+    });
 };

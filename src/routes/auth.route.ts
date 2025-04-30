@@ -7,13 +7,13 @@ export const authRouter = express.Router();
 
 authRouter.post(
   "/register",
-  validationMiddleware.validateBody(signupSchema),
+  validationMiddleware.validate({ path: "body", schema: signupSchema }),
   authController.register
 );
 
 authRouter.post(
   "/login",
-  validationMiddleware.validateBody(loginSchema),
+  validationMiddleware.validate({ path: "body", schema: loginSchema }),
   authController.login
 );
 authRouter.post("/verify-email", authController.verifyEmail);

@@ -6,21 +6,22 @@ import {
   updateDebtRequest,
 } from "../controllers/debtRequest.controller";
 import { validationMiddleware } from "../middlewares/validation.middleware";
+import { DebtRequest } from "../model/debtRequest.model";
+import { userModel } from "../model/user.model";
 import {
   debtRequestCreationSchema,
   debtRequestUpdateSchema,
 } from "../schemas/debtRequest.schema";
-import { userModel } from "../model/user.model";
 
 export const debtRequestRouter = Router();
 
 debtRequestRouter.post(
   "/",
-  validationMiddleware.validateBody(debtRequestUpdateSchema),
-  validationMiddleware.validateObjectId(
-    ["body.creditorId", "body.payerId"],
-    userModel
-  ),
+  validationMiddleware.validate([
+    { path: "body", schema: debtRequestCreationSchema },
+    { path: "body.creditorId", model: userModel },
+    { path: "body.payerId", model: userModel },
+  ]),
   createDebtRequest
 );
 
@@ -28,13 +29,12 @@ debtRequestRouter.get("/all", getAllDebtRequests);
 debtRequestRouter.get("/", getUserDebtRequests);
 
 debtRequestRouter.patch(
-  "/:id",
-
-  validationMiddleware.validateBody(debtRequestUpdateSchema),
-  validationMiddleware.validateObjectId(
-    ["body.creditorId", "body.payerId"],
-    userModel,
-    false
-  ),
+  "/:debtRequestId",
+  validationMiddleware.validate([
+    { path: "params.debtRequestId", model: DebtRequest },
+    { path: "body", schema: debtRequestUpdateSchema },
+    { path: "body.creditorId", model: userModel, required: false },
+    { path: "body.payerId", model: userModel, required: false },
+  ]),
   updateDebtRequest
 );

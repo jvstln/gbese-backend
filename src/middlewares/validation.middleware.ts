@@ -1,91 +1,92 @@
 import { Request, Response, NextFunction } from "express";
 import Joi from "joi";
-import { createObjectPath, getObjectPath } from "../utils/utils";
+import { setObjectPath, getObjectPath } from "../utils/utils";
 import { APIError } from "better-auth/api";
-import { ParsedQs } from "qs";
 import mongoose, { Model } from "mongoose";
 
+interface ValidationOption {
+  path: string;
+  schema?: Joi.Schema;
+  objectIdName?: string;
+  model?: Model<any>;
+  required?: boolean;
+}
+
 class ValidationMiddleware {
-  validateBody<T>(schema: Joi.ObjectSchema<T>) {
-    return (req: Request, _res: Response, next: NextFunction) => {
-      req.body = this.validateJoiSchema(schema, req.body);
-      next();
-    };
-  }
-
-  validateQuery<T extends ParsedQs>(schema: Joi.ObjectSchema<T>) {
-    return (req: Request, _res: Response, next: NextFunction) => {
-      req.query = this.validateJoiSchema(schema, req.query);
-      next();
-    };
-  }
-
-  validateParams<T extends { [key: string]: string }>(
-    schema: Joi.ObjectSchema<T>
-  ) {
-    return (req: Request, _res: Response, next: NextFunction) => {
-      req.params = this.validateJoiSchema(schema, req.params);
-      next();
-    };
-  }
-
-  validateObjectId(
-    paths: string[] | string,
-    model: Model<any>,
-    required = true
-  ) {
-    const pathArray = Array.isArray(paths) ? paths : [paths];
+  validate(validationOptions: ValidationOption[] | ValidationOption) {
+    validationOptions = Array.isArray(validationOptions)
+      ? validationOptions
+      : [validationOptions];
 
     return async (req: Request, _res: Response, next: NextFunction) => {
-      for (const path of pathArray) {
-        const idName = path.split(".").pop();
-        const idValue = getObjectPath(
-          req as unknown as Record<string, unknown>,
-          path
-        );
+      const requestObject = req as unknown as Record<string, unknown>;
 
-        if (!required && idValue === undefined) {
-          continue;
+      for (const option of validationOptions) {
+        const value = getObjectPath(requestObject, option.path);
+        const isRequired = option.required ?? true;
+
+        if (!isRequired && value === undefined) continue;
+
+        if (option.schema) {
+          const validatedValue = await this.validateJoiSchema(
+            option.schema,
+            value
+          );
+          setObjectPath(requestObject, option.path, validatedValue);
         }
 
-        if (!mongoose.Types.ObjectId.isValid(idValue as unknown as string)) {
+        if (
+          option.objectIdName &&
+          !mongoose.Types.ObjectId.isValid(value as unknown as string)
+        ) {
           throw new APIError("UNPROCESSABLE_ENTITY", {
-            message: `Invalid ${idName}`,
+            message: `Invalid ${option.objectIdName} ID`,
           });
         }
 
-        const document = await model.exists({ _id: idValue });
-        if (!document) {
-          throw new APIError("NOT_FOUND", {
-            message: `${idName?.slice(0, -2)} not found`,
-          });
+        if (option.model) {
+          const objectIdName =
+            option.objectIdName ?? option.path.split(".").pop()?.slice(0, -2);
+
+          if (!mongoose.Types.ObjectId.isValid(value as unknown as string)) {
+            throw new APIError("UNPROCESSABLE_ENTITY", {
+              message: `Invalid ${objectIdName} ID`,
+            });
+          }
+
+          const document = await option.model.exists({ _id: value });
+          if (!document) {
+            throw new APIError("UNPROCESSABLE_ENTITY", {
+              message: `No ${objectIdName} found with ID ${value}`,
+            });
+          }
         }
       }
       next();
     };
   }
 
-  validateJoiSchema<T>(schema: Joi.ObjectSchema<T>, data: T) {
-    const { value, error } = schema.validate(data ?? {}, {
-      abortEarly: false,
-      stripUnknown: true,
-    });
+  async validateJoiSchema<T>(schema: Joi.Schema<T>, data: T) {
+    try {
+      const value = await schema.validateAsync(data ?? {}, {
+        abortEarly: false,
+        stripUnknown: true,
+      });
 
-    if (error) {
+      return value;
+    } catch (error) {
       throw new APIError("UNPROCESSABLE_ENTITY", {
         message: "Validation Error",
-        errors: this.formatJoiError(error),
+        errors: this.formatJoiError(error as Joi.ValidationError),
       });
     }
-
-    return value;
   }
 
   private formatJoiError(error: Joi.ValidationError | undefined) {
     if (!error) return undefined;
 
     return error.details.reduce((acc, curr) => {
-      createObjectPath(acc, curr.path.join("."), curr.message);
+      setObjectPath(acc, curr.path.join("."), curr.message);
       return acc;
     }, {});
   }

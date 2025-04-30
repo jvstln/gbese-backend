@@ -12,6 +12,6 @@ userRouter.get("/me", userController.getUser);
 userRouter.patch(
   "/me",
   fileMiddleware.single("identityDocument"),
-  validationMiddleware.validateBody(userUpdateSchema),
+  validationMiddleware.validate({ path: "body", schema: userUpdateSchema }),
   userController.updateUser
 );

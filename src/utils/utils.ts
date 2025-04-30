@@ -2,7 +2,7 @@ import { APIError } from "better-auth/api";
 import { Response as ExpressResponse } from "express";
 import { StatusCodes } from "../types/api.type";
 
-export const createObjectPath = (
+export const setObjectPath = (
   object: Record<string, unknown>,
   path: string,
   value: unknown
