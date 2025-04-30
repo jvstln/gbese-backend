@@ -1,4 +1,4 @@
-import { model, Schema } from "mongoose";
+import mongoose, { model, Schema } from "mongoose";
 import { Address, identityDocumentTypes, User } from "../types/user.type";
 
 function isAddressNumberPresent(this: Address) {
@@ -60,6 +60,12 @@ const userSchema = new Schema<User>({
   identityDocumentType: {
     type: String,
     enum: identityDocumentTypes,
+  },
+  points: {
+    type: Schema.Types.Decimal128,
+    required: true,
+    default: 0,
+    get: (value: any) => value.toString(),
   },
 });
 

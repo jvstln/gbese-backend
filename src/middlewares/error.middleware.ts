@@ -9,7 +9,7 @@ export const errorMiddleware = (
   res: Response,
   _next: NextFunction
 ) => {
-  // console.log("An error occurred: ", error);
+  console.log("An error occurred: ", error);
 
   if (error instanceof ErrorNamespace.ValidationError) {
     let errors: Record<string, string> = {};

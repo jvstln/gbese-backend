@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { authRouter } from "./auth.route";
 import { userRouter } from "./user.route";
-import { debtRequestRouter } from "./debtReuest.route";
+import { debtRequestRouter } from "./debtRequest.route";
 import { authMiddleware } from "../middlewares/auth.middleware";
 
 export const indexRouter = Router();

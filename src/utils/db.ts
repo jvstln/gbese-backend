@@ -8,3 +8,6 @@ export const connectToDb = async () => {
     console.log("Error connecting to database: ", error);
   }
 };
+
+mongoose.set("toJSON", { getters: true, virtuals: true });
+mongoose.set("toObject", { getters: true, virtuals: true });

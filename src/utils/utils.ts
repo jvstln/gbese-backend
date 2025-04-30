@@ -27,6 +27,21 @@ export const createObjectPath = (
   });
 };
 
+export const getObjectPath = (
+  object: Record<string, unknown>,
+  path: string
+) => {
+  const paths = path.split(".");
+
+  let currentObject = object;
+
+  paths.forEach((key) => {
+    currentObject = currentObject[key] as Record<string, unknown>;
+  });
+
+  return currentObject;
+};
+
 export const handleRawResponse = async (
   res: ExpressResponse,
   rawResponse: Response,

@@ -1,9 +1,14 @@
 import Joi from "joi";
 
-export const debtRequestSchema = Joi.object({
-  debtorId: Joi.string().required(),
+const debtRequestPayload = {
   creditorId: Joi.string().required(),
   payerId: Joi.string().required(),
   amount: Joi.number().required(),
   description: Joi.string(),
-}).options({ stripUnknown: true });
+};
+
+export const debtRequestCreationSchema = Joi.object(debtRequestPayload);
+export const debtRequestUpdateSchema = debtRequestCreationSchema.fork(
+  Object.keys(debtRequestPayload),
+  (schema) => schema.optional()
+);

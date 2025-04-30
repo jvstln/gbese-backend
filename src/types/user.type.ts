@@ -1,3 +1,5 @@
+import mongoose from "mongoose";
+
 export const identityDocumentTypes = ["nin", "passport", "bvn"] as const;
 
 export interface UserUpdate {
@@ -13,6 +15,7 @@ export interface UserUpdate {
 export interface User extends UserUpdate {
   _id: string;
   email: string;
+  points: mongoose.Types.Decimal128;
 }
 
 export interface Address {
