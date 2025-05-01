@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Email Verified</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: "Arial", sans-serif;
+        background-color: #f0f4f8;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        color: #333;
+      }
+
+      .container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+      }
+
+      .verification-card {
+        background-color: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+        padding: 40px;
+        text-align: center;
+        width: 350px;
+        transition: transform 0.3s;
+      }
+
+      .verification-card:hover {
+        transform: translateY(-5px);
+      }
+
+      h1 {
+        color: #0735d2;
+        margin-bottom: 20px;
+        font-size: 24px;
+        font-weight: bold;
+      }
+
+      p {
+        color: #555;
+        margin-bottom: 30px;
+        font-size: 16px;
+        line-height: 1.5;
+      }
+
+      .btn {
+        display: inline-block;
+        background-color: #0735d2;
+        color: white;
+        padding: 12px 25px;
+        text-decoration: none;
+        border-radius: 5px;
+        font-size: 16px;
+        transition: background-color 0.3s, transform 0.3s;
+        box-shadow: 0 4px 15px rgba(7, 53, 210, 0.2);
+      }
+
+      .btn:hover {
+        background-color: #0628a1;
+        transform: translateY(-2px);
+      }
+
+      .icon {
+        font-size: 50px;
+        color: #0735d2;
+        margin-bottom: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="verification-card">
+        <div class="icon">✔️</div>
+        <h1>Email Verified!</h1>
+        <p>
+          Thank you for verifying your email address. You can now access all
+          features of our website.
+        </p>
+        <!-- <a href="homepage.html" class="btn">Go to Homepage</a> -->
+      </div>
+    </div>
+  </body>
+</html>

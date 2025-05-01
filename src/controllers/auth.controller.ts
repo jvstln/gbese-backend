@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { Request, Response } from "express";
 import { APIError } from "better-auth/api";
 import { VerifyEmail } from "../types/auth.type";
