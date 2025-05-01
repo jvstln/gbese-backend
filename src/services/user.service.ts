@@ -1,5 +1,5 @@
 import fs from "node:fs";
-import { userModel } from "../model/user.model";
+import { userModel } from "../models/user.model";
 import { getDocument, uploadDocument } from "../utils/cloudinary";
 import { UserUpdate } from "../types/user.type";
 import { APIError } from "better-auth/api";
