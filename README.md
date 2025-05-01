@@ -33,7 +33,7 @@ Before running this project, make sure you have:
 
 ## Installation
 
-1. Clone the repository:
+1. Clone the repository: 
 
 ```bash
 git clone https://github.com/jvstln/gbese-backend.git

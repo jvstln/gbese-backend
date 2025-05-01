@@ -15,3 +15,4 @@ export const loginSchema = Joi.object({
 }).options({
   stripUnknown: true,
 });
+
