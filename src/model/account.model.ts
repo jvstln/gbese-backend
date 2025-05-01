@@ -9,8 +9,8 @@ const accountSchema = new Schema<IAccount>(
       type: Schema.Types.ObjectId,
       ref: "User",
       required: [true, "User ID is required"],
-      validate: userModel.validateUserExistence,
-      unique: true,
+      validate: userModel.validateUserExistence.bind(userModel),
+      unique: [true, "A user can only have one account"],
     },
     balance: {
       type: Schema.Types.Decimal128,
@@ -24,18 +24,17 @@ const accountSchema = new Schema<IAccount>(
       trim: true,
       unique: true,
       immutable: true,
+      default: generateAccountNumber,
       length: [10, "Account number must be 10 characters long"],
+    },
+    isActive: {
+      type: Boolean,
+      required: [true, "Account active status is required"],
+      default: true,
     },
   },
   { timestamps: true }
 );
-
-accountSchema.pre("save", async function (next) {
-  if (this.isNew) {
-    this.accountNumber = generateAccountNumber();
-  }
-  next();
-});
 
 accountSchema.virtual("user", {
   ref: "User",
@@ -44,4 +43,4 @@ accountSchema.virtual("user", {
   justOne: true,
 });
 
-export const accountModel = model<IAccount>("Wallet", accountSchema);
+export const accountModel = model<IAccount>("Account", accountSchema);

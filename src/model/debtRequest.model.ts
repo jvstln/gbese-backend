@@ -10,19 +10,19 @@ const DebtRequestSchema = new Schema<IDebtRequest>(
       type: Schema.Types.ObjectId,
       ref: "User",
       required: [true, "Debtor ID is required"],
-      validate: userModel.validateUserExistence,
+      validate: userModel.validateUserExistence.bind(userModel),
     },
     creditorId: {
       type: Schema.Types.ObjectId,
       ref: "User",
       required: [true, "Creditor ID is required"],
-      validate: userModel.validateUserExistence,
+      validate: userModel.validateUserExistence.bind(userModel),
     },
     payerId: {
       type: Schema.Types.ObjectId,
       ref: "User",
       required: [true, "Payer ID is required"],
-      validate: userModel.validateUserExistence,
+      validate: userModel.validateUserExistence.bind(userModel),
     },
     amount: {
       type: Schema.Types.Decimal128,

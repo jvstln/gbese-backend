@@ -2,7 +2,7 @@ import "dotenv/config";
 import { betterAuth } from "better-auth";
 import { mongodbAdapter } from "better-auth/adapters/mongodb";
 import { MongoClient } from "mongodb";
-import { sendEmail } from "./mali";
+import { sendEmail } from "./mail";
 import {
   verifyEmailHTMLTemplate,
   verifyEmailTextTemplate,
@@ -18,22 +18,18 @@ export const auth = betterAuth({
     requireEmailVerification: true,
   },
   emailVerification: {
-    sendVerificationEmail: async ({ user, url, token }, request) => {
-      console.log("Sending verification email to", user.email, token, request);
+    sendVerificationEmail: async ({ user, token }) => {
+      const url = `${process.env.BASE_URL}/api/v1/auth/verify-email?token=${token}&userId=${user.id}`;
+      console.log(`Sent verification email to: ${user.email} - ${url}`);
       await sendEmail({
         to: user.email,
         subject: "Verify your email address",
-        html: verifyEmailHTMLTemplate({
-          name: user.name,
-          url: `${process.env.BASE_URL}/api/v1/auth/verify-email?token=${token}`,
-        }),
-        text: verifyEmailTextTemplate({
-          name: user.name,
-          url: `${process.env.BASE_URL}/api/v1/auth/verify-email?token=${token}`,
-        }),
+        html: verifyEmailHTMLTemplate({ name: user.name, url }),
+        text: verifyEmailTextTemplate({ name: user.name, url }),
       });
     },
     autoSignInAfterVerification: true,
+    sendOnSignUp: true,
   },
   user: {
     modelName: "users",
@@ -47,6 +43,9 @@ export const auth = betterAuth({
         required: true,
       },
     },
+  },
+  account: {
+    modelName: "better-auth-accounts",
   },
   basePath: "api/v1/better-auth",
 });

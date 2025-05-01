@@ -17,3 +17,4 @@ authRouter.post(
   authController.login
 );
 authRouter.get("/verify-email", authController.verifyEmail);
+authRouter.get("/logout", authController.logout);

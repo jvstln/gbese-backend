@@ -42,6 +42,18 @@ class AuthService {
 
     return auth.api.getSession({ headers: requestHeaders });
   }
+
+  async logout(requestObject: Request) {
+    const requestHeaders = new Headers();
+
+    requestObject.rawHeaders.forEach((value, index) => {
+      if (index % 2 === 0) {
+        requestHeaders.append(value, requestObject.rawHeaders[index + 1]);
+      }
+    });
+
+    return auth.api.signOut({ headers: requestHeaders, asResponse: true });
+  }
 }
 
 export const authService = new AuthService();
