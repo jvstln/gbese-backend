@@ -11,7 +11,7 @@ export const createDebtTransfer = async (data: DebtRequestCreation) => {
 export const getDebtTransfers = async (
   filters: Record<string, unknown> = {}
 ) => {
-  return DebtRequest.find().populate("debtor creditor payer");
+  return DebtRequest.find(filters).populate("debtor creditor payer");
 };
 
 export const updateDebtTransfer = async (

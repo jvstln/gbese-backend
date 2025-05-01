@@ -10,19 +10,19 @@ const DebtRequestSchema = new Schema<IDebtRequest>(
       type: Schema.Types.ObjectId,
       ref: "User",
       required: [true, "Debtor ID is required"],
-      validate: validateUserExistence,
+      validate: userModel.validateUserExistence,
     },
     creditorId: {
       type: Schema.Types.ObjectId,
       ref: "User",
       required: [true, "Creditor ID is required"],
-      validate: validateUserExistence,
+      validate: userModel.validateUserExistence,
     },
     payerId: {
       type: Schema.Types.ObjectId,
       ref: "User",
       required: [true, "Payer ID is required"],
-      validate: validateUserExistence,
+      validate: userModel.validateUserExistence,
     },
     amount: {
       type: Schema.Types.Decimal128,
@@ -79,14 +79,6 @@ DebtRequestSchema.pre("save", function (next) {
 
   next();
 });
-
-async function validateUserExistence(this: unknown, value: string) {
-  const userExists = await userModel.exists({ _id: value });
-
-  if (!userExists) {
-    throw new Error(`User with ID ${value} does not exist`);
-  }
-}
 
 DebtRequestSchema.virtual("debtor", {
   ref: "User",

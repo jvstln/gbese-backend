@@ -18,6 +18,10 @@ export interface User extends UserUpdate {
   points: mongoose.Types.Decimal128;
 }
 
+export interface UserModel extends mongoose.Model<User> {
+  validateUserExistence: (userId: string) => Promise<void>;
+}
+
 export interface Address {
   number: string;
   street: string;

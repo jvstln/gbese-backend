@@ -3,6 +3,7 @@ import { authRouter } from "./auth.route";
 import { userRouter } from "./user.route";
 import { debtRequestRouter } from "./debtRequest.route";
 import { authMiddleware } from "../middlewares/auth.middleware";
+import { accountRouter } from "./account.route";
 
 export const indexRouter = Router();
 
@@ -11,10 +12,15 @@ indexRouter.get("", (req, res) => {
 });
 
 // For all authenticated routes
-indexRouter.use(["/users", "/debt-requests"], authMiddleware.handleSession);
+indexRouter.use(
+  ["/users", "/debt-requests", "/accounts"],
+  authMiddleware.handleSession
+);
 
 indexRouter.use("/auth", authRouter);
 
 indexRouter.use("/users", userRouter);
 
 indexRouter.use("/debt-requests", debtRequestRouter);
+
+indexRouter.use("/accounts", accountRouter);

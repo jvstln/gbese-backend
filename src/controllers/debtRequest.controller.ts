@@ -4,11 +4,13 @@ import {
   getDebtTransfers,
   updateDebtTransfer,
 } from "../services/debtRequest.service";
+import { debtRequestUserRoles } from "../types/debtRequest.type";
 
 export const createDebtRequest = async (req: Request, res: Response) => {
   req.body.debtorId = req.userSession!.user._id;
 
   const debtTransfer = await createDebtTransfer(req.body);
+
   res.status(201).json({
     success: true,
     message: "Debt request created successfully",
@@ -16,7 +18,10 @@ export const createDebtRequest = async (req: Request, res: Response) => {
   });
 };
 
-export const getUserDebtRequests = async (req: Request, res: Response) => {
+export const getUserDebtRequests = async (
+  req: Request<{}, {}, {}, { role: (typeof debtRequestUserRoles)[number] }>,
+  res: Response
+) => {
   const { role } = req.query;
   const userId = req.userSession!.user._id;
   let filter: Record<string, unknown> = {};
@@ -52,11 +57,9 @@ export const updateDebtRequest = async (req: Request, res: Response) => {
   const updates = req.body;
 
   const updatedDebtTransfer = await updateDebtTransfer(debtRequestId, updates);
-  res
-    .status(200)
-    .json({
-      success: true,
-      message: "Debt request updated successfully",
-      data: updatedDebtTransfer,
-    });
+  res.status(200).json({
+    success: true,
+    message: "Debt request updated successfully",
+    data: updatedDebtTransfer,
+  });
 };
