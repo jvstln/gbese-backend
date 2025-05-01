@@ -31,19 +31,32 @@ class AuthController {
   }
 
   async verifyEmail(req: Request<{}, {}, {}, VerifyEmail>, res: Response) {
-    const response = await authService.verifyEmail(req.query);
+    try {
+      const response = await authService.verifyEmail(req.query);
 
-    if (!response?.status) {
-      throw new APIError(StatusCodes.BAD_REQUEST, {
-        message: "Error verifying email",
+      if (!response?.status) {
+        throw new APIError(StatusCodes.BAD_REQUEST, {
+          message: "Error verifying email",
+        });
+      }
+
+      // res.json({
+      //   success: true,
+      //   message: "Email verified successfully",
+      //   data: response.user,
+      // });
+      res.render("successful-email-verification");
+    } catch (error) {
+      console.log("Error verifying email: ", error);
+      res.render("failed-email-verification", {
+        message:
+          error instanceof APIError
+            ? error.body?.message ?? error.message
+            : error instanceof Error
+            ? error.message
+            : "An error occurred while verifying email",
       });
     }
-
-    res.json({
-      success: true,
-      message: "Email verified successfully",
-      data: response.user,
-    });
   }
 }
 
