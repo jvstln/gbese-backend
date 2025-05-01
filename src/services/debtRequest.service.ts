@@ -1,55 +1,33 @@
 import { APIError } from "better-auth/api";
 import { DebtRequest } from "../model/debtRequest.model";
-import { DebtRequestCreation, IDebtRequest } from "../types/debtRequest.type";
+import { DebtRequestCreation } from "../types/debtRequest.type";
 
 export const createDebtTransfer = async (data: DebtRequestCreation) => {
-  validateDebtRequestData(data);
+  const debtRequest = await DebtRequest.create(data);
 
-  return (await DebtRequest.create(data)).populate([
-    { path: "debtorId" },
-    { path: "creditorId" },
-    { path: "payerId" },
-  ]);
+  return getDebtTransfers({ _id: debtRequest._id });
 };
 
 export const getDebtTransfers = async (
   filters: Record<string, unknown> = {}
 ) => {
-  return DebtRequest.find(filters)
-    .populate([
-      { path: "debtorId" },
-      { path: "creditorId" },
-      { path: "payerId" },
-    ])
-    .exec();
+  return DebtRequest.find().populate("debtor creditor payer");
 };
 
 export const updateDebtTransfer = async (
   id: string,
   updates: Partial<DebtRequestCreation>
 ) => {
-  return DebtRequest.findByIdAndUpdate(id, updates, { new: true })
-    .populate([
-      { path: "debtorId" },
-      { path: "creditorId" },
-      { path: "payerId" },
-    ])
-    .exec();
-};
+  const debtRequest = await DebtRequest.findById(id);
 
-const validateDebtRequestData = (data: DebtRequestCreation) => {
-  if (
-    data.debtorId.toString() === data.creditorId.toString() ||
-    data.debtorId.toString() === data.payerId.toString()
-  ) {
-    throw new APIError("UNPROCESSABLE_ENTITY", {
-      message: "You (Debtor) cannot be the same as creditor or payer",
+  if (!debtRequest) {
+    throw new APIError("NOT_FOUND", {
+      message: "Debt request not found",
     });
   }
 
-  if (data.creditorId.toString() === data.payerId.toString()) {
-    throw new APIError("UNPROCESSABLE_ENTITY", {
-      message: "Creditor cannot be the same as payer",
-    });
-  }
+  debtRequest.set(updates);
+
+  const updatedDebtRequest = await debtRequest.save();
+  return updatedDebtRequest.populate("debtor creditor payer");
 };

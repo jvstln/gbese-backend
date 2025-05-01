@@ -1,3 +1,4 @@
+import { truncate } from "fs/promises";
 import mongoose from "mongoose";
 
 export const connectToDb = async () => {
@@ -11,3 +12,4 @@ export const connectToDb = async () => {
 
 mongoose.set("toJSON", { getters: true, virtuals: true });
 mongoose.set("toObject", { getters: true, virtuals: true });
+mongoose.set("runValidators", true);

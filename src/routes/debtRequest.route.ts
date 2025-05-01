@@ -7,7 +7,6 @@ import {
 } from "../controllers/debtRequest.controller";
 import { validationMiddleware } from "../middlewares/validation.middleware";
 import { DebtRequest } from "../model/debtRequest.model";
-import { userModel } from "../model/user.model";
 import {
   debtRequestCreationSchema,
   debtRequestUpdateSchema,
@@ -19,8 +18,6 @@ debtRequestRouter.post(
   "/",
   validationMiddleware.validate([
     { path: "body", schema: debtRequestCreationSchema },
-    { path: "body.creditorId", model: userModel },
-    { path: "body.payerId", model: userModel },
   ]),
   createDebtRequest
 );
@@ -33,8 +30,6 @@ debtRequestRouter.patch(
   validationMiddleware.validate([
     { path: "params.debtRequestId", model: DebtRequest },
     { path: "body", schema: debtRequestUpdateSchema },
-    { path: "body.creditorId", model: userModel, required: false },
-    { path: "body.payerId", model: userModel, required: false },
   ]),
   updateDebtRequest
 );

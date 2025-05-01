@@ -32,11 +32,10 @@ export const getObjectPath = (
   path: string
 ) => {
   const paths = path.split(".");
-
   let currentObject = object;
 
   paths.forEach((key) => {
-    currentObject = currentObject[key] as Record<string, unknown>;
+    currentObject = currentObject?.[key] as Record<string, unknown>;
   });
 
   return currentObject;

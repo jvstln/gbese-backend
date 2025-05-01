@@ -1,6 +1,8 @@
-import mongoose, { Schema, model } from "mongoose";
+import { Schema, model } from "mongoose";
 import { debtRequestStatuses, IDebtRequest } from "../types/debtRequest.type";
 import Decimal from "decimal.js";
+import { userModel } from "./user.model";
+import { APIError } from "better-auth/api";
 
 const DebtRequestSchema = new Schema<IDebtRequest>(
   {
@@ -8,35 +10,32 @@ const DebtRequestSchema = new Schema<IDebtRequest>(
       type: Schema.Types.ObjectId,
       ref: "User",
       required: [true, "Debtor ID is required"],
+      validate: validateUserExistence,
     },
     creditorId: {
       type: Schema.Types.ObjectId,
       ref: "User",
       required: [true, "Creditor ID is required"],
+      validate: validateUserExistence,
     },
     payerId: {
       type: Schema.Types.ObjectId,
       ref: "User",
       required: [true, "Payer ID is required"],
+      validate: validateUserExistence,
     },
     amount: {
       type: Schema.Types.Decimal128,
       required: [true, "Debt amount is required"],
-      validate: [
-        {
-          validator: (v: number) => v > 0,
-          message: "Amount must be greater than 0",
-        },
-      ],
+      validate: {
+        validator: (v: number) => v > 0,
+        message: "Amount must be greater than 0",
+      },
       get: (value: any) => value.toString(),
     },
     description: { type: String },
     debtPoint: {
       type: Schema.Types.Decimal128,
-      default: function () {
-        const debtRequestAmount = this.amount.toString();
-        return new Decimal(debtRequestAmount).mul(0.01).toString();
-      },
       get: (value: any) => value.toString(),
     },
     status: {
@@ -48,26 +47,67 @@ const DebtRequestSchema = new Schema<IDebtRequest>(
   {
     timestamps: true,
     versionKey: false,
-    toJSON: {
-      transform(doc, ret) {
-        if (doc.populated("debtorId")) {
-          ret.debtor = ret.debtorId;
-          delete ret.debtorId;
-        }
-        if (doc.populated("creditorId")) {
-          ret.creditor = ret.creditorId;
-          delete ret.creditorId;
-        }
-        if (doc.populated("payerId")) {
-          ret.payer = ret.payerId;
-          delete ret.payerId;
-        }
-
-        return ret;
+    methods: {
+      getDebtPoint: function () {
+        const debtRequestAmount = this.amount.toString();
+        return new Decimal(debtRequestAmount).mul(0.01).toString();
       },
     },
   }
 );
+
+DebtRequestSchema.pre("save", function (next) {
+  if (this.isModified("amount")) {
+    this.debtPoint = this.getDebtPoint();
+  }
+
+  // ensure that the creditor, the debtor and the payer are not the same
+  if (
+    this.debtorId.toString() === this.creditorId.toString() ||
+    this.debtorId.toString() === this.payerId.toString()
+  ) {
+    throw new APIError("UNPROCESSABLE_ENTITY", {
+      message: "You (Debtor) cannot be the same as creditor or payer",
+    });
+  }
+
+  if (this.creditorId.toString() === this.payerId.toString()) {
+    throw new APIError("UNPROCESSABLE_ENTITY", {
+      message: "Creditor cannot be the same as payer",
+    });
+  }
+
+  next();
+});
+
+async function validateUserExistence(this: unknown, value: string) {
+  const userExists = await userModel.exists({ _id: value });
+
+  if (!userExists) {
+    throw new Error(`User with ID ${value} does not exist`);
+  }
+}
+
+DebtRequestSchema.virtual("debtor", {
+  ref: "User",
+  localField: "debtorId",
+  foreignField: "_id",
+  justOne: true,
+});
+
+DebtRequestSchema.virtual("creditor", {
+  ref: "User",
+  localField: "creditorId",
+  foreignField: "_id",
+  justOne: true,
+});
+
+DebtRequestSchema.virtual("payer", {
+  ref: "User",
+  localField: "payerId",
+  foreignField: "_id",
+  justOne: true,
+});
 
 export const DebtRequest = model<IDebtRequest>(
   "DebtRequest",

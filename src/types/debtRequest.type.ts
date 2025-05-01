@@ -13,6 +13,7 @@ export interface IDebtRequest extends DebtRequestCreation {
   status: string;
   createdAt: Date;
   updatedAt: Date;
+  getDebtPoint(): mongoose.Types.Decimal128;
 }
 
 export const debtRequestStatuses = [
