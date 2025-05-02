@@ -1,4 +1,3 @@
-import fs from "node:fs";
 import { userModel } from "../model/user.model";
 import { getDocument, uploadDocument } from "../utils/cloudinary";
 import { UserUpdate } from "../types/user.type";
@@ -6,11 +5,11 @@ import { APIError } from "better-auth/api";
 
 class UserService {
   async getUser(filters: Record<string, unknown> = {}) {
-    return userModel.findOne(filters).exec();
+    return userModel.findOne(filters).populate("account").exec();
   }
 
   async getUsers(filters: Record<string, unknown> = {}) {
-    return userModel.find(filters).exec();
+    return userModel.find(filters).populate("account").exec();
   }
 
   async updateUser(

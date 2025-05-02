@@ -35,30 +35,26 @@ class ValidationMiddleware {
           setObjectPath(requestObject, option.path, validatedValue);
         }
 
-        if (
-          option.objectIdName &&
-          !mongoose.Types.ObjectId.isValid(value as unknown as string)
-        ) {
-          throw new APIError("UNPROCESSABLE_ENTITY", {
-            message: `Invalid ${option.objectIdName} ID`,
-          });
-        }
+        const objectIdName =
+          option.objectIdName ?? option.path.split(".").pop()?.slice(0, -2);
 
-        if (option.model) {
-          const objectIdName =
-            option.objectIdName ?? option.path.split(".").pop()?.slice(0, -2);
-
+        if (option.objectIdName || option.model) {
           if (!mongoose.Types.ObjectId.isValid(value as unknown as string)) {
-            throw new APIError("UNPROCESSABLE_ENTITY", {
+            throw new APIError("BAD_REQUEST", {
               message: `Invalid ${objectIdName} ID`,
             });
           }
+        }
 
+        if (option.model) {
           const document = await option.model.exists({ _id: value });
           if (!document) {
-            throw new APIError("UNPROCESSABLE_ENTITY", {
-              message: `No ${objectIdName} found with ID ${value}`,
-            });
+            throw new APIError(
+              option.path.startsWith("params") ? "NOT_FOUND" : "BAD_REQUEST",
+              {
+                message: `No ${objectIdName} found with ID ${value}`,
+              }
+            );
           }
         }
       }
@@ -75,7 +71,7 @@ class ValidationMiddleware {
 
       return value;
     } catch (error) {
-      throw new APIError("UNPROCESSABLE_ENTITY", {
+      throw new APIError("BAD_REQUEST", {
         message: "Validation Error",
         errors: this.formatJoiError(error as Joi.ValidationError),
       });

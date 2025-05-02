@@ -88,4 +88,11 @@ const userSchema = new Schema<User>(
   }
 );
 
+userSchema.virtual("account", {
+  ref: "Account",
+  localField: "_id",
+  foreignField: "userId",
+  justOne: true,
+});
+
 export const userModel = model<User, UserModel>("User", userSchema);

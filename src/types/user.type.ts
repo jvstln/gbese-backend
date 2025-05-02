@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { IAccount } from "./account.type";
 
 export const identityDocumentTypes = ["nin", "passport", "bvn"] as const;
 
@@ -16,6 +17,7 @@ export interface User extends UserUpdate {
   _id: string;
   email: string;
   points: mongoose.Types.Decimal128;
+  account: IAccount;
 }
 
 export interface UserModel extends mongoose.Model<User> {

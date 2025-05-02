@@ -1,7 +1,7 @@
 import { Schema, model } from "mongoose";
-import { IAccount } from "../types/wallet.type";
 import { userModel } from "./user.model";
 import { generateAccountNumber } from "../utils/finance";
+import { IAccount } from "../types/account.type";
 
 const accountSchema = new Schema<IAccount>(
   {
