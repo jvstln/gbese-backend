@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import { generateAccountNumber } from "../utils/finance";
-import { accountService } from "../services/accounts/account.service";
-import { accountTransferService } from "../services/accounts/transfer.service";
+import { accountService } from "../services/account.service";
 
 class AccountController {
   async getUserAccount(req: Request, res: Response) {
@@ -15,15 +14,6 @@ class AccountController {
       data: userWallet,
       number: generateAccountNumber(),
     });
-  }
-
-  async peerTransfer(req: Request, res: Response) {
-    const response = await accountTransferService.peerTransfer({
-      fromAccountId: req.userSession?.user.account._id,
-      ...req.body,
-    });
-
-    res.json(response);
   }
 }
 

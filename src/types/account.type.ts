@@ -2,6 +2,7 @@ export interface PeerTransfer {
   fromAccountId: string;
   toAccountId: string;
   amount: string;
+  description?: string;
 }
 
 import mongoose from "mongoose";

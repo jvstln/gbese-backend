@@ -1,5 +1,4 @@
-import { accountModel } from "../../model/account.model";
-import { accountTransferService } from "./transfer.service";
+import { accountModel } from "../model/account.model";
 
 class AccountServices {
   async getAccount(filters: Record<string, unknown> = {}) {
@@ -16,8 +15,6 @@ class AccountServices {
   async exists(filters: Record<string, unknown>) {
     return await accountModel.exists(filters);
   }
-
-  // peerTransfer = accountTransferService.peerTransfer;
 }
 
 export const accountService = new AccountServices();

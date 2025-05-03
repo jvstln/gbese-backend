@@ -5,7 +5,7 @@ import { VerifyEmail } from "../types/auth.type";
 import { authService } from "../services/auth.service";
 import { handleRawResponse } from "../utils/utils";
 import { StatusCodes } from "../types/api.type";
-import { accountService } from "../services/accounts/account.service";
+import { accountService } from "../services/account.service";
 import { userModel } from "../model/user.model";
 
 class AuthController {
