@@ -15,6 +15,7 @@ export interface UserUpdate {
 
 export interface User extends UserUpdate {
   _id: string;
+  name: string;
   email: string;
   points: mongoose.Types.Decimal128;
   account: IAccount;

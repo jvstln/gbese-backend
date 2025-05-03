@@ -15,3 +15,5 @@ userRouter.patch(
   validationMiddleware.validate({ path: "body", schema: userUpdateSchema }),
   userController.updateUser
 );
+
+userRouter.get("/search", userController.searchUser);

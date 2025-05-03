@@ -22,6 +22,16 @@ class UserController {
       data: user,
     });
   }
+
+  async searchUser(req: Request, res: Response) {
+    const users = await userService.searchUser(req.query.search as string);
+
+    res.json({
+      success: true,
+      message: "Users fetched successfully",
+      data: users,
+    });
+  }
 }
 
 export const userController = new UserController();

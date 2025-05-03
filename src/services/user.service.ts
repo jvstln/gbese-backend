@@ -58,6 +58,10 @@ class UserService {
     await user.save();
     return user;
   }
+
+  async searchUser(search: string) {
+    return userModel.find({ $text: { $search: search } }).exec();
+  }
 }
 
 export const userService = new UserService();

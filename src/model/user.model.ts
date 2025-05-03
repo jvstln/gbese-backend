@@ -1,4 +1,4 @@
-import mongoose, { Model, model, Schema } from "mongoose";
+import { model, Schema } from "mongoose";
 import {
   Address,
   identityDocumentTypes,
@@ -34,6 +34,11 @@ const addressSchema = new Schema<Address>({
 
 const userSchema = new Schema<User>(
   {
+    name: {
+      type: String,
+      required: [true, "Name is required"],
+      minLength: [3, "Name must be at least 3 characters long"],
+    },
     firstName: {
       type: String,
       required: [true, "Firstname is required"],
@@ -94,5 +99,13 @@ userSchema.virtual("account", {
   foreignField: "userId",
   justOne: true,
 });
+
+userSchema.pre("save", function () {
+  if (this.isModified("firstName") || this.isModified("lastName")) {
+    this.name = `${this.firstName} ${this.lastName}`;
+  }
+});
+
+userSchema.index({ name: "text", email: "text" });
 
 export const userModel = model<User, UserModel>("User", userSchema);
