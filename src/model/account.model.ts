@@ -33,7 +33,7 @@ const accountSchema = new Schema<IAccount>(
       default: true,
     },
   },
-  { timestamps: true }
+  { timestamps: true, versionKey: false }
 );
 
 accountSchema.virtual("user", {

@@ -16,3 +16,4 @@ accountRouter.post(
 
 accountRouter.patch("/disable", accountController.disableUserAccount);
 accountRouter.patch("/enable", accountController.enableUserAccount);
+accountRouter.get("/:accountId", accountController.getAccountByNumberOrId);

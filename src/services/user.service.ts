@@ -60,7 +60,10 @@ class UserService {
   }
 
   async searchUser(search: string) {
-    return userModel.find({ $text: { $search: search } }).exec();
+    return userModel
+      .find({ $text: { $search: search } })
+      .populate("account")
+      .exec();
   }
 }
 
