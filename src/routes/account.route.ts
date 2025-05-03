@@ -13,3 +13,6 @@ accountRouter.post(
   validationMiddleware.validate({ path: "body", schema: peerTransferSchema }),
   transferController.peerTransfer
 );
+
+accountRouter.patch("/disable", accountController.disableUserAccount);
+accountRouter.patch("/enable", accountController.enableUserAccount);

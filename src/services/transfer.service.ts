@@ -37,6 +37,13 @@ export class TransferService {
         });
       }
 
+      // Check if account is disabled
+      if (!fromAccount.isActive) {
+        throw new APIError("UNPROCESSABLE_ENTITY", {
+          message: "Sender account is disabled",
+        });
+      }
+
       const amountDecimal = new Decimal(amount);
       if (amountDecimal.gt(fromAccount.balance as string)) {
         throw new APIError("UNPROCESSABLE_ENTITY", {

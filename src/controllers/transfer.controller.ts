@@ -8,7 +8,7 @@ class TransferController {
       ...req.body,
     });
 
-    res.json(response);
+    res.status(201).json(response);
   }
 }
 

@@ -10,9 +10,31 @@ class AccountController {
 
     res.json({
       success: true,
-      message: "User wallet fetched successfully",
+      message: "User account fetched successfully",
       data: userWallet,
       number: generateAccountNumber(),
+    });
+  }
+
+  async disableUserAccount(req: Request, res: Response) {
+    await accountService.disableAccount(
+      req.userSession!.user.account._id.toString()
+    );
+
+    res.json({
+      success: true,
+      message: "User account disabled successfully",
+    });
+  }
+
+  async enableUserAccount(req: Request, res: Response) {
+    await accountService.enableAccount(
+      req.userSession!.user.account._id.toString()
+    );
+
+    res.json({
+      success: true,
+      message: "User account enabled successfully",
     });
   }
 }
