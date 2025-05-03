@@ -1,6 +1,7 @@
 import { APIError } from "better-auth/api";
 import { Response as ExpressResponse } from "express";
 import { StatusCodes } from "../types/api.type";
+import mongoose from "mongoose";
 
 export const setObjectPath = (
   object: Record<string, unknown>,
@@ -61,4 +62,20 @@ export const handleRawResponse = async (
   if (end) res.status(rawResponse.status).json(responseBody);
 
   return responseBody;
+};
+
+export const formatPaginatedDocs = (
+  paginatedDocs: mongoose.AggregatePaginateResult<unknown>
+) => {
+  return {
+    data: paginatedDocs.docs,
+    meta: {
+      totalData: paginatedDocs.totalDocs,
+      limit: paginatedDocs.limit,
+      page: paginatedDocs.page,
+      totalPages: paginatedDocs.totalPages,
+      prevPage: paginatedDocs.prevPage,
+      nextPage: paginatedDocs.nextPage,
+    },
+  };
 };

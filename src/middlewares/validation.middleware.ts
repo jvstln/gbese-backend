@@ -32,7 +32,14 @@ class ValidationMiddleware {
             option.schema,
             value
           );
-          setObjectPath(requestObject, option.path, validatedValue);
+
+          if (option.path.startsWith("query")) {
+            const [oldUrl, oldQuery] = (requestObject.url as string).split("?");
+            const newQuery = new URLSearchParams(validatedValue);
+            requestObject.url = `${oldUrl}?${newQuery.toString()}`;
+          } else {
+            setObjectPath(requestObject, option.path, validatedValue);
+          }
         }
 
         const objectIdName =
@@ -64,7 +71,7 @@ class ValidationMiddleware {
 
   async validateJoiSchema<T>(schema: Joi.Schema<T>, data: T) {
     try {
-      const value = await schema.validateAsync(data ?? {}, {
+      const value = await schema.validateAsync(data, {
         abortEarly: false,
         stripUnknown: true,
       });

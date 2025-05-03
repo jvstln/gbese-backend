@@ -1,5 +1,6 @@
-import { truncate } from "fs/promises";
 import mongoose from "mongoose";
+import mongoosePaginate from "mongoose-paginate-v2";
+import mongooseAggregatePaginate from "mongoose-aggregate-paginate-v2";
 
 export const connectToDb = async () => {
   try {

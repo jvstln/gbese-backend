@@ -1,10 +1,12 @@
-import { model, Schema } from "mongoose";
+import mongoose, { model, Schema } from "mongoose";
 import {
   ITransaction,
+  TransactionCategories,
   TransactionStatuses,
   TransactionTypes,
 } from "../types/transaction.type";
 import { generateTransactionReference } from "../utils/finance";
+import mongooseAggregatePaginate from "mongoose-aggregate-paginate-v2";
 
 const transactionSchema = new Schema<ITransaction>(
   {
@@ -17,6 +19,11 @@ const transactionSchema = new Schema<ITransaction>(
     type: {
       type: String,
       enum: Object.values(TransactionTypes),
+      required: true,
+    },
+    category: {
+      type: String,
+      enum: Object.values(TransactionCategories),
       required: true,
     },
     balanceBefore: {
@@ -58,4 +65,9 @@ const transactionSchema = new Schema<ITransaction>(
 // Index for fast lookups by user and account
 transactionSchema.index({ accountId: 1, createdAt: -1 });
 
-export const transactionModel = model("Transaction", transactionSchema);
+transactionSchema.plugin(mongooseAggregatePaginate);
+
+export const transactionModel = model<
+  ITransaction,
+  mongoose.AggregatePaginateModel<ITransaction>
+>("Transaction", transactionSchema);

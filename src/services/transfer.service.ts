@@ -4,6 +4,7 @@ import { accountModel } from "../model/account.model";
 import { APIError } from "better-auth/api";
 import Decimal from "decimal.js";
 import {
+  TransactionCategories,
   TransactionStatuses,
   TransactionTypes,
 } from "../types/transaction.type";
@@ -62,6 +63,7 @@ export class TransferService {
       const transactionFrom = new transactionModel({
         accountId: fromAccountId,
         type: TransactionTypes.DEBIT,
+        category: TransactionCategories.TRANSFER,
         balanceBefore: fromAccount.balance,
         description,
         status: TransactionStatuses.PENDING,
@@ -71,6 +73,7 @@ export class TransferService {
       const transactionTo = new transactionModel({
         accountId: toAccountId,
         type: TransactionTypes.CREDIT,
+        category: TransactionCategories.TRANSFER,
         balanceBefore: toAccount.balance,
         description,
         status: TransactionStatuses.PENDING,
