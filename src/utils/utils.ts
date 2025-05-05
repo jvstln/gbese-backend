@@ -69,7 +69,7 @@ export const formatPaginatedDocs = (
 ) => {
   return {
     data: paginatedDocs.docs,
-    meta: {
+    metadata: {
       totalData: paginatedDocs.totalDocs,
       limit: paginatedDocs.limit,
       page: paginatedDocs.page,

@@ -16,10 +16,6 @@ export interface IDebtRequest extends DebtRequestCreation {
   getDebtPoint(): mongoose.Types.Decimal128;
 }
 
-export const debtRequestStatuses = [
-  "pending",
-  "completed",
-  "rejected",
-] as const;
+export const debtRequestStatuses = ["pending", "accepted", "rejected"] as const;
 
 export const debtRequestUserRoles = ["debtor", "creditor", "payer"] as const;

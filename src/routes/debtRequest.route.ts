@@ -1,10 +1,5 @@
 import { Router } from "express";
-import {
-  createDebtRequest,
-  getAllDebtRequests,
-  getUserDebtRequests,
-  updateDebtRequest,
-} from "../controllers/debtRequest.controller";
+import { debtRequestController } from "../controllers/debtRequest.controller";
 import { validationMiddleware } from "../middlewares/validation.middleware";
 import { DebtRequest } from "../model/debtRequest.model";
 import {
@@ -19,11 +14,11 @@ debtRequestRouter.post(
   validationMiddleware.validate([
     { path: "body", schema: debtRequestCreationSchema },
   ]),
-  createDebtRequest
+  debtRequestController.createDebtRequest
 );
 
-debtRequestRouter.get("/all", getAllDebtRequests);
-debtRequestRouter.get("/", getUserDebtRequests);
+debtRequestRouter.get("/all", debtRequestController.getAllDebtRequests);
+debtRequestRouter.get("/", debtRequestController.getUserDebtRequests);
 
 debtRequestRouter.patch(
   "/:debtRequestId",
@@ -31,5 +26,10 @@ debtRequestRouter.patch(
     { path: "params.debtRequestId", model: DebtRequest },
     { path: "body", schema: debtRequestUpdateSchema },
   ]),
-  updateDebtRequest
+  debtRequestController.updateDebtRequest
+);
+
+debtRequestRouter.get(
+  "/pay/:debtRequestId",
+  debtRequestController.payDebtRequest
 );

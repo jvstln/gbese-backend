@@ -1,12 +1,18 @@
 import { Request, Response } from "express";
 import { userService } from "../services/user.service";
+import { debtRequestService } from "../services/debtRequest.service";
 
 class UserController {
   async getUser(req: Request, res: Response) {
+    const debtRequestStats = await debtRequestService.getDebtStatistics(
+      req.userSession!.user._id
+    );
+
     res.json({
       success: true,
       message: "User details fetched successfully",
       data: req.userSession!.user,
+      metadata: debtRequestStats,
     });
   }
 
