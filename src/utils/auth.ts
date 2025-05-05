@@ -21,12 +21,12 @@ export const auth = betterAuth({
     sendVerificationEmail: async ({ user, token }) => {
       const url = `${process.env.BASE_URL}/api/v1/auth/verify-email?token=${token}&userId=${user.id}`;
       console.log(`Sent verification email to: ${user.email} - ${url}`);
-      // await sendEmail({
-      //   to: user.email,
-      //   subject: "Verify your email address",
-      //   html: verifyEmailHTMLTemplate({ name: user.name, url }),
-      //   text: verifyEmailTextTemplate({ name: user.name, url }),
-      // });
+      await sendEmail({
+        to: user.email,
+        subject: "Verify your email address",
+        html: verifyEmailHTMLTemplate({ name: user.name, url }),
+        text: verifyEmailTextTemplate({ name: user.name, url }),
+      });
     },
     autoSignInAfterVerification: true,
     sendOnSignUp: true,
