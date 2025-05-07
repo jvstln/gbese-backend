@@ -49,6 +49,9 @@ const userSchema = new Schema<User>(
       required: [true, "Lastname is required"],
       minLength: [3, "Lastname must be at least 3 characters long"],
     },
+    image: {
+      type: String,
+    },
     email: {
       type: String,
       required: [true, "Email is required"],

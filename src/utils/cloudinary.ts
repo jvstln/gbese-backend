@@ -40,7 +40,10 @@ export async function getDocument(url: string) {
     });
     return document;
   } catch (error) {
-    console.log("Error getting cloudinary document details: ", error);
+    console.log(
+      "Error getting cloudinary document details: ",
+      error instanceof Error ? error.message : error
+    );
     return null;
   }
 }

@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import Joi from "joi";
-import { setObjectPath, getObjectPath } from "../utils/utils";
+import { setNestedValue, getObjectPath } from "../utils/utils";
 import { APIError } from "better-auth/api";
 import mongoose, { Model } from "mongoose";
 
@@ -33,12 +33,12 @@ class ValidationMiddleware {
             value
           );
 
-          if (option.path.startsWith("query")) {
+          if (option.path === "query") {
             const [oldUrl, oldQuery] = (requestObject.url as string).split("?");
             const newQuery = new URLSearchParams(validatedValue);
             requestObject.url = `${oldUrl}?${newQuery.toString()}`;
           } else {
-            setObjectPath(requestObject, option.path, validatedValue);
+            setNestedValue(requestObject, option.path, validatedValue);
           }
         }
 
@@ -89,7 +89,7 @@ class ValidationMiddleware {
     if (!error) return undefined;
 
     return error.details.reduce((acc, curr) => {
-      setObjectPath(acc, curr.path.join("."), curr.message);
+      setNestedValue(acc, curr.path.join("."), curr.message);
       return acc;
     }, {});
   }

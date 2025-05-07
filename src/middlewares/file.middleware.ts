@@ -76,7 +76,7 @@ class FileMiddleware {
   parseFormDataBody(req: Request, res: Response, next: NextFunction) {
     const result = {};
 
-    Object.keys(req.body).forEach((key) => {
+    Object.keys(req.body ?? {}).forEach((key) => {
       const parts = key.split(".");
       let current: { [key: string]: {} } = result;
 

@@ -8,6 +8,7 @@ export interface UserUpdate {
   lastName: string;
   phone: string;
   address: Address;
+  image: string | Express.Multer.File;
   dateOfBirth: Date;
   identityDocumentUrl: string;
   identityDocumentType: typeof identityDocumentTypes;
@@ -19,6 +20,7 @@ export interface User extends UserUpdate {
   email: string;
   points: mongoose.Types.Decimal128;
   account: IAccount;
+  image: string;
 }
 
 export interface UserModel extends mongoose.Model<User> {

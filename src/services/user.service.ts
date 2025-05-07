@@ -20,6 +20,7 @@ class UserService {
       identityDocument,
       identityDocumentType,
       phone,
+      image,
       address,
       firstName,
       lastName,
@@ -30,6 +31,22 @@ class UserService {
 
     if (!user) {
       throw new APIError("UNAUTHORIZED", { message: "User not found" });
+    }
+
+    // upload profile image
+    if (data.image && typeof image !== "string") {
+      const currentImage = await getDocument(user.image);
+
+      const uploadedDocument = await uploadDocument({
+        path: image.path,
+        filename: image.originalname,
+        tags: [identityDocumentType, "profile-image"],
+        folder: `${user.email}`,
+        public_id: currentImage?.public_id,
+        overwrite: true,
+      });
+
+      user.image = uploadedDocument.secure_url;
     }
 
     // upload identityDocument
