@@ -47,5 +47,19 @@ export const auth = betterAuth({
   account: {
     modelName: "better-auth-accounts",
   },
+
+  socialProviders: {
+    google: {
+      prompt: "select_account",
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      mapProfileToUser: (profile) => {
+        return {
+          firstName: profile.given_name,
+          lastName: profile.family_name,
+        };
+      },
+    },
+  },
   basePath: "api/v1/better-auth",
 });

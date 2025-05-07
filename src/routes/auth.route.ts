@@ -1,6 +1,10 @@
 import express from "express";
 import { authController } from "../controllers/auth.controller";
-import { loginSchema, signupSchema } from "../schemas/auth.schema";
+import {
+  googleLoginSchema,
+  loginSchema,
+  signupSchema,
+} from "../schemas/auth.schema";
 import { validationMiddleware } from "../middlewares/validation.middleware";
 
 export const authRouter = express.Router();
@@ -18,3 +22,13 @@ authRouter.post(
 );
 authRouter.get("/verify-email", authController.verifyEmail);
 authRouter.get("/logout", authController.logout);
+
+authRouter.get("/google/callback", authController.googleCallback);
+authRouter.get(
+  "/google",
+  validationMiddleware.validate({
+    path: "query",
+    schema: googleLoginSchema,
+  }),
+  authController.googleLogin
+);

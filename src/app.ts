@@ -16,10 +16,10 @@ app.use(middlewareRouter);
 
 app.use("/api/v1", indexRouter);
 
-app.all("*splat", (_req, res) => {
+app.all("*splat", (req, res) => {
   res.status(404).json({
     success: false,
-    message: "Route not found",
+    message: `Route ${req.method} ${req.url} not found`,
   });
 });
 

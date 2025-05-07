@@ -73,6 +73,44 @@ class AuthController {
       ...responseBody,
     });
   }
+
+  async googleLogin(
+    req: Request<{}, {}, {}, { callbackUrl: string }>,
+    res: Response
+  ) {
+    const googleResponse = await authService.getGoogleUrl(
+      req.query.callbackUrl
+    );
+
+    res.redirect(googleResponse.url!);
+  }
+
+  async googleCallback(
+    req: Request<{}, {}, {}, { callbackUrl: string }>,
+    res: Response
+  ) {
+    // Set all incoming headers to outgoing headers
+    const headers = new Headers();
+    req.rawHeaders.forEach((value, index) => {
+      if (index % 2 === 0) {
+        res.setHeader(value, req.rawHeaders[index + 1]);
+        headers.set(value, req.rawHeaders[index + 1]);
+      }
+    });
+
+    const userSession = await authService.getSession(req);
+    if (!userSession?.user)
+      throw new APIError("UNAUTHORIZED", {
+        message: "Error using google login",
+      });
+
+    // Create account for the user on registration if non exists
+    if (!(await accountService.exists({ userId: userSession.user.id }))) {
+      await accountService.createAccount(userSession.user.id);
+    }
+
+    res.redirect(req.query.callbackUrl);
+  }
 }
 
 export const authController = new AuthController();

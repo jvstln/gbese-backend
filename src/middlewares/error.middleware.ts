@@ -31,7 +31,7 @@ export const errorMiddleware = (
       res.set(key, value);
     });
 
-    res.status(error.statusCode).json({
+    res.status(error.statusCode ?? (Number(error.status) || 400)).json({
       success: false,
       ...error.body,
     });
