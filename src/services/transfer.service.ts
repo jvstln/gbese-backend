@@ -16,6 +16,7 @@ export class TransferService {
     toAccountId,
     amount,
     description,
+    transactionCategory = TransactionCategories.TRANSFER,
   }: PeerTransfer) {
     return mongoose.connection.transaction(async () => {
       const fromAccount = await accountModel.findById(fromAccountId);
@@ -63,7 +64,7 @@ export class TransferService {
       const transactionFrom = new transactionModel({
         accountId: fromAccountId,
         type: TransactionTypes.DEBIT,
-        category: TransactionCategories.TRANSFER,
+        category: transactionCategory,
         balanceBefore: fromAccount.balance,
         description,
         status: TransactionStatuses.PENDING,
@@ -73,7 +74,7 @@ export class TransferService {
       const transactionTo = new transactionModel({
         accountId: toAccountId,
         type: TransactionTypes.CREDIT,
-        category: TransactionCategories.TRANSFER,
+        category: transactionCategory,
         balanceBefore: toAccount.balance,
         description,
         status: TransactionStatuses.PENDING,
@@ -102,14 +103,10 @@ export class TransferService {
       await transactionTo.save();
 
       return {
-        success: true,
-        message: "Transfer successful",
-        data: {
-          fromAccount,
-          toAccount,
-          amountTransferred: amountDecimal,
-          transactions: [transactionFrom, transactionTo],
-        },
+        fromAccount,
+        toAccount,
+        amountTransferred: amountDecimal,
+        transactions: [transactionFrom, transactionTo],
       };
     });
   }

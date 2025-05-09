@@ -1,5 +1,5 @@
 import { Schema, model } from "mongoose";
-import { debtRequestStatuses, IDebtRequest } from "../types/debtRequest.type";
+import { DebtRequestStatuses, IDebtRequest } from "../types/debtRequest.type";
 import Decimal from "decimal.js";
 import { userModel } from "./user.model";
 import { APIError } from "better-auth/api";
@@ -40,8 +40,8 @@ const DebtRequestSchema = new Schema<IDebtRequest>(
     },
     status: {
       type: String,
-      enum: debtRequestStatuses,
-      default: "pending",
+      enum: Object.values(DebtRequestStatuses),
+      default: DebtRequestStatuses.PENDING,
     },
   },
   {

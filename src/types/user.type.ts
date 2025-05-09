@@ -21,6 +21,7 @@ export interface User extends UserUpdate {
   points: mongoose.Types.Decimal128;
   account: IAccount;
   image: string;
+  emailVerified: boolean;
 }
 
 export interface UserModel extends mongoose.Model<User> {

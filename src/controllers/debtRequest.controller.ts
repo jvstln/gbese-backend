@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import { debtRequestUserRoles } from "../types/debtRequest.type";
 import { debtRequestService } from "../services/debtRequest.service";
+import { DebtRequestUserRoles } from "../types/debtRequest.type";
 
 class DebtRequestController {
   async createDebtRequest(req: Request, res: Response) {
@@ -16,16 +16,16 @@ class DebtRequestController {
   }
 
   async getUserDebtRequests(
-    req: Request<{}, {}, {}, { role: (typeof debtRequestUserRoles)[number] }>,
+    req: Request<{}, {}, {}, { role: DebtRequestUserRoles }>,
     res: Response
   ) {
     const { role } = req.query;
     const userId = req.userSession!.user._id;
     let filter: Record<string, unknown> = {};
 
-    if (role === "creditor") filter.creditorId = userId;
-    else if (role === "debtor") filter.debtorId = userId;
-    else if (role === "payer") filter.payerId = userId;
+    if (role === DebtRequestUserRoles.CREDITOR) filter.creditorId = userId;
+    else if (role === DebtRequestUserRoles.DEBTOR) filter.debtorId = userId;
+    else if (role === DebtRequestUserRoles.PAYER) filter.payerId = userId;
     else {
       filter = {
         $or: [
@@ -72,14 +72,15 @@ class DebtRequestController {
     const { debtRequestId } = req.params;
     const updates = req.body;
 
-    const updatedDebtTransfer = await debtRequestService.updateDebtRequest(
+    const payedDebtRequest = await debtRequestService.payDebtRequest(
       debtRequestId,
-      updates
+      req.userSession!.user
     );
+
     res.status(200).json({
       success: true,
       message: "Debt request paid successfully",
-      data: updatedDebtTransfer,
+      data: payedDebtRequest,
     });
   }
 }

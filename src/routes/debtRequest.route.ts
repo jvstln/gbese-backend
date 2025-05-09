@@ -6,6 +6,7 @@ import {
   debtRequestCreationSchema,
   debtRequestUpdateSchema,
 } from "../schemas/debtRequest.schema";
+import { authMiddleware } from "../middlewares/auth.middleware";
 
 export const debtRequestRouter = Router();
 
@@ -14,6 +15,7 @@ debtRequestRouter.post(
   validationMiddleware.validate([
     { path: "body", schema: debtRequestCreationSchema },
   ]),
+  authMiddleware.handleUserVerification,
   debtRequestController.createDebtRequest
 );
 
@@ -26,10 +28,12 @@ debtRequestRouter.patch(
     { path: "params.debtRequestId", model: DebtRequest },
     { path: "body", schema: debtRequestUpdateSchema },
   ]),
+  authMiddleware.handleUserVerification,
   debtRequestController.updateDebtRequest
 );
 
 debtRequestRouter.get(
-  "/pay/:debtRequestId",
+  "/accept/:debtRequestId",
+  authMiddleware.handleUserVerification,
   debtRequestController.payDebtRequest
 );

@@ -3,6 +3,7 @@ import { accountController } from "../controllers/account.controller";
 import { validationMiddleware } from "../middlewares/validation.middleware";
 import { peerTransferSchema } from "../schemas/account.schema";
 import { transferController } from "../controllers/transfer.controller";
+import { authMiddleware } from "../middlewares/auth.middleware";
 
 export const accountRouter = express.Router();
 
@@ -11,6 +12,7 @@ accountRouter.get("/me", accountController.getUserAccount);
 accountRouter.post(
   "/transfer",
   validationMiddleware.validate({ path: "body", schema: peerTransferSchema }),
+  authMiddleware.handleUserVerification,
   transferController.peerTransfer
 );
 

@@ -1,11 +1,13 @@
+import mongoose from "mongoose";
+import { TransactionCategories } from "./transaction.type";
+
 export interface PeerTransfer {
   fromAccountId: string;
   toAccountId: string;
   amount: string;
   description?: string;
+  transactionCategory?: TransactionCategories;
 }
-
-import mongoose from "mongoose";
 
 export interface IAccount {
   _id: mongoose.Types.ObjectId;
