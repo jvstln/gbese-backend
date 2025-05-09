@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { Request } from "express";
 
 export interface DebtRequestCreation {
   debtorId: mongoose.Types.ObjectId;
@@ -26,4 +27,9 @@ export enum DebtRequestUserRoles {
   DEBTOR = "debtor",
   CREDITOR = "creditor",
   PAYER = "payer",
+}
+
+export interface DebtRequestFilters {
+  role?: DebtRequestUserRoles;
+  status?: DebtRequestStatuses;
 }

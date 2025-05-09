@@ -4,6 +4,7 @@ import { validationMiddleware } from "../middlewares/validation.middleware";
 import { DebtRequest } from "../model/debtRequest.model";
 import {
   debtRequestCreationSchema,
+  debtRequestFiltersSchema,
   debtRequestUpdateSchema,
 } from "../schemas/debtRequest.schema";
 import { authMiddleware } from "../middlewares/auth.middleware";
@@ -19,8 +20,15 @@ debtRequestRouter.post(
   debtRequestController.createDebtRequest
 );
 
+debtRequestRouter.get(
+  "/",
+  validationMiddleware.validate({
+    path: "query",
+    schema: debtRequestFiltersSchema,
+  }),
+  debtRequestController.getUserDebtRequests
+);
 debtRequestRouter.get("/all", debtRequestController.getAllDebtRequests);
-debtRequestRouter.get("/", debtRequestController.getUserDebtRequests);
 
 debtRequestRouter.patch(
   "/:debtRequestId",

@@ -1,6 +1,9 @@
 import { Request, Response } from "express";
 import { debtRequestService } from "../services/debtRequest.service";
-import { DebtRequestUserRoles } from "../types/debtRequest.type";
+import {
+  DebtRequestFilters,
+  DebtRequestUserRoles,
+} from "../types/debtRequest.type";
 
 class DebtRequestController {
   async createDebtRequest(req: Request, res: Response) {
@@ -16,10 +19,10 @@ class DebtRequestController {
   }
 
   async getUserDebtRequests(
-    req: Request<{}, {}, {}, { role: DebtRequestUserRoles }>,
+    req: Request<{}, {}, {}, DebtRequestFilters>,
     res: Response
   ) {
-    const { role } = req.query;
+    const { role, status } = req.query;
     const userId = req.userSession!.user._id;
     let filter: Record<string, unknown> = {};
 
@@ -35,6 +38,8 @@ class DebtRequestController {
         ],
       };
     }
+
+    if (status) filter.status = status;
 
     const userDebtRequests = await debtRequestService.getDebtRequests(filter);
     res.status(200).json({

@@ -1,4 +1,8 @@
 import Joi from "joi";
+import {
+  DebtRequestStatuses,
+  DebtRequestUserRoles,
+} from "../types/debtRequest.type";
 
 const debtRequestPayload = {
   creditorId: Joi.string().required(),
@@ -12,3 +16,8 @@ export const debtRequestUpdateSchema = debtRequestCreationSchema.fork(
   Object.keys(debtRequestPayload),
   (schema) => schema.optional()
 );
+
+export const debtRequestFiltersSchema = Joi.object({
+  role: Joi.string().valid(...Object.values(DebtRequestUserRoles), ""),
+  status: Joi.string().valid(...Object.values(DebtRequestStatuses), ""),
+});
