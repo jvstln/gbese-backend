@@ -1,9 +1,10 @@
 import mongoose from "mongoose";
 import { accountModel } from "../model/account.model";
+import axios from "axios";
 
 class AccountServices {
   async getAccount(filters: Record<string, unknown> = {}) {
-    return accountModel.findOne(filters);
+    return accountModel.findOne(filters).populate("user");
   }
 
   // Create account for a new user
@@ -18,11 +19,15 @@ class AccountServices {
   }
 
   async disableAccount(accountId: string) {
-    return accountModel.updateOne({ _id: accountId }, { isActive: false });
+    return accountModel
+      .updateOne({ _id: accountId }, { isActive: false })
+      .populate("user");
   }
 
   async enableAccount(accountId: string) {
-    return accountModel.updateOne({ _id: accountId }, { isActive: true });
+    return accountModel
+      .updateOne({ _id: accountId }, { isActive: true })
+      .populate("user");
   }
 
   async getMinimalUserAccount(accountId: string) {

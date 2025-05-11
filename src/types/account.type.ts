@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { TransactionCategories } from "./transaction.type";
+import { User } from "./user.type";
 
 export interface PeerTransfer {
   fromAccountId: string;
@@ -7,6 +8,12 @@ export interface PeerTransfer {
   amount: string;
   description?: string;
   transactionCategory?: TransactionCategories;
+}
+
+export interface FundAccount {
+  accountId: string;
+  amount: string;
+  callbackUrl: string;
 }
 
 export interface IAccount {
@@ -17,4 +24,5 @@ export interface IAccount {
   isActive: boolean;
   createdAt?: Date;
   updatedAt?: Date;
+  user: User;
 }

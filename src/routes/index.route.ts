@@ -5,6 +5,7 @@ import { debtRequestRouter } from "./debtRequest.route";
 import { authMiddleware } from "../middlewares/auth.middleware";
 import { accountRouter } from "./account.route";
 import transactionRouter from "./transaction.route";
+import paystackRouter from "./paystack.route";
 
 export const indexRouter = Router();
 
@@ -27,3 +28,5 @@ indexRouter.use("/debt-requests", debtRequestRouter);
 indexRouter.use("/accounts", accountRouter);
 
 indexRouter.use("/transactions", transactionRouter);
+
+indexRouter.use("/paystack", paystackRouter);

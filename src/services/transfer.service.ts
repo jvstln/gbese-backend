@@ -1,6 +1,5 @@
 import mongoose from "mongoose";
-import { PeerTransfer } from "../types/account.type";
-import { accountModel } from "../model/account.model";
+import { FundAccount, PeerTransfer } from "../types/account.type";
 import { APIError } from "better-auth/api";
 import Decimal from "decimal.js";
 import {
@@ -9,6 +8,9 @@ import {
   TransactionTypes,
 } from "../types/transaction.type";
 import { transactionModel } from "../model/transaction.model";
+import { paystackService } from "./paystack.service";
+import { PaystackMetadataAction } from "../types/paystack.type";
+import { accountService } from "./account.service";
 
 export class TransferService {
   async peerTransfer({
@@ -19,14 +21,18 @@ export class TransferService {
     transactionCategory = TransactionCategories.TRANSFER,
   }: PeerTransfer) {
     return mongoose.connection.transaction(async () => {
-      const fromAccount = await accountModel.findById(fromAccountId);
+      const fromAccount = await accountService.getAccount({
+        _id: fromAccountId,
+      });
       if (!fromAccount) {
         throw new APIError("BAD_REQUEST", {
           message: "Sender account not found",
         });
       }
 
-      const toAccount = await accountModel.findById(toAccountId);
+      const toAccount = await accountService.getAccount({
+        _id: toAccountId,
+      });
       if (!toAccount) {
         throw new APIError("BAD_REQUEST", {
           message: "Receiver account not found",
@@ -109,6 +115,41 @@ export class TransferService {
         transactions: [transactionFrom, transactionTo],
       };
     });
+  }
+
+  async fundAccount({ accountId, amount, callbackUrl }: FundAccount) {
+    const account = await accountService.getAccount({ _id: accountId });
+    if (!account) {
+      throw new APIError("BAD_REQUEST", {
+        message: "Account not found",
+      });
+    }
+
+    const dbTransaction = await mongoose.connection.transaction(async () => {
+      const transaction = new transactionModel({
+        accountId,
+        type: TransactionTypes.CREDIT,
+        category: TransactionCategories.FUND,
+        balanceBefore: account.balance,
+        balanceAfter: new Decimal(account.balance.toString()).add(amount),
+        status: TransactionStatuses.PENDING,
+      });
+
+      const response = await paystackService.initializePayment({
+        amount,
+        email: account.user.email,
+        reference: transaction.reference,
+        callback_url: callbackUrl,
+        metadata: { action: PaystackMetadataAction.FUND, accountId },
+      });
+
+      transaction.metadata = response;
+      await transaction.save();
+
+      return { ...response, transaction };
+    });
+
+    return dbTransaction;
   }
 }
 

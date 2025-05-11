@@ -14,6 +14,8 @@ export enum TransactionStatuses {
 export enum TransactionCategories {
   TRANSFER = "transfer",
   DEBT_TRANSFER = "debt_transfer",
+  FUND = "fund",
+  WITHDRAWAL = "withdrawal",
 }
 
 export interface ITransaction {

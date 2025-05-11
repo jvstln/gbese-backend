@@ -39,6 +39,10 @@ const userSchema = new Schema<User>(
       required: [true, "Name is required"],
       minLength: [3, "Name must be at least 3 characters long"],
     },
+    emailVerified: {
+      type: Boolean,
+      default: false,
+    },
     firstName: {
       type: String,
       required: [true, "Firstname is required"],
