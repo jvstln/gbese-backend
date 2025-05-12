@@ -201,12 +201,14 @@ export class TransferService {
         description,
         metadata: {
           accountNumber: accountNumber!,
+          accountName: transferRecipient.details.account_name,
           bankCode: bankCode!,
+          bankName: transferRecipient.details.bank_name,
           amount,
-          accountName: transferRecipient.name,
           recipientCode: transferRecipient.recipient_code,
         },
       });
+      await transaction.save();
 
       /**
        * The Below commented code is meant to initiiate a transfer from paystack and then for
@@ -219,7 +221,12 @@ export class TransferService {
       //   reference: transaction.reference,
       // });
 
-      await transaction.save();
+      // Debit the account
+      account.balance = new Decimal(account.balance.toString())
+        .sub(amount!)
+        .toString();
+      await account.save();
+
       return transaction;
     });
 

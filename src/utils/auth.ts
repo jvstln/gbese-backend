@@ -60,5 +60,11 @@ export const auth = betterAuth({
       },
     },
   },
+  advanced: {
+    defaultCookieAttributes: {
+      sameSite: "none",
+      overwrite: true,
+    },
+  },
   basePath: "api/v1/better-auth",
 });

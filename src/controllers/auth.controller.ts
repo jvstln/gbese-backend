@@ -89,16 +89,8 @@ class AuthController {
     req: Request<{}, {}, {}, { callbackUrl: string }>,
     res: Response
   ) {
-    // Set all incoming headers to outgoing headers
-    const headers = new Headers();
-    req.rawHeaders.forEach((value, index) => {
-      if (index % 2 === 0) {
-        res.setHeader(value, req.rawHeaders[index + 1]);
-        headers.set(value, req.rawHeaders[index + 1]);
-      }
-    });
-
     const userSession = await authService.getSession(req);
+
     if (!userSession?.user)
       throw new APIError("UNAUTHORIZED", {
         message: "Error using google login",
