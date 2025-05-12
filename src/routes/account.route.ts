@@ -4,9 +4,11 @@ import { validationMiddleware } from "../middlewares/validation.middleware";
 import {
   fundAccountSchema,
   peerTransferSchema,
+  withdrawSchema,
 } from "../schemas/transfer.schema";
 import { transferController } from "../controllers/transfer.controller";
 import { authMiddleware } from "../middlewares/auth.middleware";
+import { paystackController } from "../controllers/paystack.controller";
 
 export const accountRouter = express.Router();
 
@@ -27,5 +29,14 @@ accountRouter.get(
   validationMiddleware.validate({ path: "query", schema: fundAccountSchema }),
   transferController.initiateFundUserAccount
 );
+
+accountRouter.post(
+  "/withdraw",
+  validationMiddleware.validate({ path: "body", schema: withdrawSchema }),
+  authMiddleware.handleUserVerification,
+  transferController.initiateWithdrawal
+);
+
+accountRouter.get("/banks", paystackController.getBanks);
 
 accountRouter.get("/:accountId", accountController.getAccountByNumberOrId);

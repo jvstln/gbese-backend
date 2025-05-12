@@ -1,7 +1,9 @@
+import { AxiosError } from "axios";
 import { APIError } from "better-auth/api";
 import { Request, Response, NextFunction } from "express";
 import { Error as ErrorNamespace } from "mongoose";
 import { MulterError } from "multer";
+import { getAxiosError } from "../utils/utils";
 
 export const errorMiddleware = (
   error: Error,
@@ -42,6 +44,14 @@ export const errorMiddleware = (
     res.status(400).json({
       success: false,
       message: `Unknown file field "${error.field}" is not allowed`,
+    });
+    return;
+  }
+
+  if (error instanceof AxiosError) {
+    res.status(error.response?.status ?? 400).json({
+      success: false,
+      message: getAxiosError(error),
     });
     return;
   }

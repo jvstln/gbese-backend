@@ -24,10 +24,16 @@ const amountSchema = Joi.alternatives().conditional(Joi.string(), {
 
 export const peerTransferSchema = Joi.object({
   toAccountId: Joi.string().required(),
-  amount: amountSchema,
+  amount: amountSchema.required(),
 });
 
 export const fundAccountSchema = Joi.object({
-  amount: amountSchema,
+  amount: amountSchema.required(),
   callbackUrl: Joi.string().required(),
+});
+
+export const withdrawSchema = Joi.object({
+  amount: amountSchema.required(),
+  accountNumber: Joi.string().required(),
+  bankCode: Joi.string().required(),
 });

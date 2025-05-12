@@ -76,6 +76,29 @@ class PaystackController {
 
     res.status(200).json({ message: "OK" });
   }
+
+  async getBanks(req: Request, res: Response) {
+    const banks = await paystackService.getBanks();
+    res.json({
+      success: true,
+      message: "Banks fetched successfully",
+      data: banks,
+    });
+  }
+
+  // async resolveAccountNumber(req: Request, res: Response) {
+  //   const { accountNumber, bankCode } = req.query;
+  //   if (!accountNumber || !bankCode) {
+  //     throw new APIError("BAD_REQUEST", {
+  //       message: "Account number and bank code are required",
+  //     });
+  //   }
+  //   const response = await paystackService.resolveAccountNumber(
+  //     accountNumber as string,
+  //     bankCode as string
+  //   );
+  //   return response;
+  // }
 }
 
 export const paystackController = new PaystackController();

@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { transferService } from "../services/transfer.service";
-import { FundAccount } from "../types/account.type";
+import { FundAccount, Withdraw as Withdrawal } from "../types/account.type";
 
 class TransferController {
   async peerTransfer(req: Request, res: Response) {
@@ -26,6 +26,25 @@ class TransferController {
     });
 
     res.redirect(fundResponse.authorization_url);
+  }
+
+  async initiateWithdrawal(
+    req: Request<{}, {}, {}, Withdrawal>,
+    res: Response
+  ) {
+    const withdrawalResponse = await transferService.withdraw({
+      accountId: req.userSession!.user.account._id.toString(),
+      ...req.body,
+    });
+
+    res.json({
+      success: true,
+      message: "Withdrawal successful",
+      data: {
+        ...withdrawalResponse.metadata,
+        transaction: withdrawalResponse,
+      },
+    });
   }
 }
 

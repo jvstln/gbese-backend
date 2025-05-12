@@ -11,5 +11,5 @@ export const isAccountNumberValid = (accountNumber: string) => {
 };
 
 export const generateTransactionReference = () => {
-  return "GBESE_TXN_" + nanoidNumbers(10);
+  return "GBESE_TXN_" + nanoidNumbers(12);
 };

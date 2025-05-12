@@ -47,7 +47,6 @@ export const auth = betterAuth({
   account: {
     modelName: "better-auth-accounts",
   },
-
   socialProviders: {
     google: {
       prompt: "select_account",

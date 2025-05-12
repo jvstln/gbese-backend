@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { FundAccount, PeerTransfer } from "../types/account.type";
+import { FundAccount, PeerTransfer, Withdraw } from "../types/account.type";
 import { APIError } from "better-auth/api";
 import Decimal from "decimal.js";
 import {
@@ -11,6 +11,7 @@ import { transactionModel } from "../model/transaction.model";
 import { paystackService } from "./paystack.service";
 import { PaystackMetadataAction } from "../types/paystack.type";
 import { accountService } from "./account.service";
+import { transferRecipientService } from "./transferRecipient.service";
 
 export class TransferService {
   async peerTransfer({
@@ -147,6 +148,79 @@ export class TransferService {
       await transaction.save();
 
       return { ...response, transaction };
+    });
+
+    return dbTransaction;
+  }
+
+  async withdraw({
+    accountId,
+    amount,
+    accountNumber,
+    bankCode,
+    description,
+  }: Withdraw & { accountId: string }) {
+    const account = await accountService.getAccount({ _id: accountId });
+    if (!account) {
+      throw new APIError("BAD_REQUEST", {
+        message: "Account not found",
+      });
+    }
+
+    const amountDecimal = new Decimal(amount!);
+    if (amountDecimal.gt(account.balance as string)) {
+      throw new APIError("UNPROCESSABLE_ENTITY", {
+        message: "Insufficient balance",
+        currentBalance: account.balance,
+      });
+    }
+
+    const dbTransaction = await mongoose.connection.transaction(async () => {
+      const resolvedAccount = await paystackService.resolveAccountNumber(
+        accountNumber!,
+        bankCode!
+      );
+
+      // Create or retrieve transfer recipient
+      const transferRecipient =
+        await transferRecipientService.resolveTransferRecipient({
+          accountName: resolvedAccount.account_name,
+          bankCode: bankCode!,
+          accountNumber: accountNumber!,
+          userId: account.userId.toString(),
+        });
+
+      // Create transaction history
+      const transaction = new transactionModel({
+        accountId,
+        type: TransactionTypes.DEBIT,
+        category: TransactionCategories.WITHDRAWAL,
+        balanceBefore: account.balance,
+        balanceAfter: new Decimal(account.balance.toString()).sub(amount!),
+        status: TransactionStatuses.SUCCESS,
+        description,
+        metadata: {
+          accountNumber: accountNumber!,
+          bankCode: bankCode!,
+          amount,
+          accountName: transferRecipient.name,
+          recipientCode: transferRecipient.recipient_code,
+        },
+      });
+
+      /**
+       * The Below commented code is meant to initiiate a transfer from paystack and then for
+       * the webhook to react to  the events
+       * but paystack requires business upgrade. until then, the withdrawal will be simulated
+       */
+      // const response = await paystackService.initiateTransfer({
+      //   amount: amount!,
+      //   recipient: transferRecipient.recipient_code,
+      //   reference: transaction.reference,
+      // });
+
+      await transaction.save();
+      return transaction;
     });
 
     return dbTransaction;

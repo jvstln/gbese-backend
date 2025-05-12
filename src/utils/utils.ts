@@ -2,6 +2,7 @@ import { APIError } from "better-auth/api";
 import { Response as ExpressResponse } from "express";
 import { StatusCodes } from "../types/api.type";
 import mongoose from "mongoose";
+import { isAxiosError } from "axios";
 
 /**
  * Sets a value at a nested path within an object.
@@ -95,4 +96,15 @@ export const formatPaginatedDocs = (
       nextPage: paginatedDocs.nextPage,
     },
   };
+};
+
+export const getAxiosError = (
+  error: unknown,
+  defaultMessage: string = "Error processing external API"
+) => {
+  return isAxiosError(error)
+    ? error.response?.data.message
+    : error instanceof Error
+    ? error.message
+    : defaultMessage;
 };

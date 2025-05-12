@@ -16,6 +16,13 @@ export interface FundAccount {
   callbackUrl: string;
 }
 
+export interface Withdraw {
+  amount?: string;
+  accountNumber?: string;
+  bankCode?: string;
+  description?: string;
+}
+
 export interface IAccount {
   _id: mongoose.Types.ObjectId;
   userId: mongoose.Types.ObjectId;
