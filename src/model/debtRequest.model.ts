@@ -49,8 +49,14 @@ const DebtRequestSchema = new Schema<IDebtRequest>(
     versionKey: false,
     methods: {
       getDebtPoint: function () {
+        /**
+         * Maths for debt point
+         * ₦10000 =20 Gbese points --- 500 = 1 Gbese point
+         * 100Gbp = 1 token
+         * 100Gbt = 1 Nft
+         */
         const debtRequestAmount = this.amount.toString();
-        return new Decimal(debtRequestAmount).mul(0.01).toString();
+        return new Decimal(debtRequestAmount).div(500).toString();
       },
     },
   }
