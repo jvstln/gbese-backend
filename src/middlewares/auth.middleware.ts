@@ -20,6 +20,18 @@ class AuthMiddleware {
     req.userSession = { session: sessionData.session, user };
     next();
   }
+
+  async handleUserVerification(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
+    if (!req.userSession || !req.userSession.user.emailVerified) {
+      throw new APIError("FORBIDDEN", { message: "User email not verified" });
+    }
+
+    next();
+  }
 }
 
 export const authMiddleware = new AuthMiddleware();

@@ -42,6 +42,29 @@ class AuthService {
 
     return auth.api.getSession({ headers: requestHeaders });
   }
+
+  async logout(requestObject: Request) {
+    const requestHeaders = new Headers();
+
+    requestObject.rawHeaders.forEach((value, index) => {
+      if (index % 2 === 0) {
+        requestHeaders.append(value, requestObject.rawHeaders[index + 1]);
+      }
+    });
+
+    return auth.api.signOut({ headers: requestHeaders, asResponse: true });
+  }
+
+  async getGoogleUrl(frontendCallbackUrl: string) {
+    const response = await auth.api.signInSocial({
+      body: {
+        provider: "google",
+        callbackURL: `/api/v1/auth/google/callback?callbackUrl=${frontendCallbackUrl}`,
+      },
+    });
+
+    return response;
+  }
 }
 
 export const authService = new AuthService();

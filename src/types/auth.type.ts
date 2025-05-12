@@ -12,5 +12,5 @@ export interface Login {
 
 export interface VerifyEmail {
   token: string;
-  callbackURL?: string;
+  userId: string;
 }

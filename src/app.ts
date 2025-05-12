@@ -9,14 +9,17 @@ const PORT = process.env.PORT || 5000;
 
 const app = express();
 
+app.set("views", "src/views");
+app.set("view engine", "ejs");
+
 app.use(middlewareRouter);
 
 app.use("/api/v1", indexRouter);
 
-app.all("*splat", (_req, res) => {
+app.all("*splat", (req, res) => {
   res.status(404).json({
     success: false,
-    message: "Route not found",
+    message: `Route ${req.method} ${req.url} not found`,
   });
 });
 

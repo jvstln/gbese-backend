@@ -1,14 +1,16 @@
+import "dotenv/config";
 import { Request, Response } from "express";
 import { APIError } from "better-auth/api";
 import { VerifyEmail } from "../types/auth.type";
 import { authService } from "../services/auth.service";
 import { handleRawResponse } from "../utils/utils";
 import { StatusCodes } from "../types/api.type";
+import { accountService } from "../services/account.service";
+import { userModel } from "../model/user.model";
 
 class AuthController {
   async register(req: Request, res: Response) {
     const signUpResponse = await authService.signUp(req.body);
-
     const responseBody = await handleRawResponse(res, signUpResponse);
 
     res.status(signUpResponse.status).json({
@@ -31,41 +33,75 @@ class AuthController {
 
   async verifyEmail(req: Request<{}, {}, {}, VerifyEmail>, res: Response) {
     try {
-      const response = await authService.verifyEmail(req.query);
+      const user = await userModel.findById(req.query.userId);
+      if (!user) throw new APIError("NOT_FOUND", { message: "User not found" });
 
-      if (!response?.status) {
+      const verificationResponse = await authService.verifyEmail(req.query);
+
+      if (!verificationResponse?.status) {
         throw new APIError(StatusCodes.BAD_REQUEST, {
           message: "Error verifying email",
         });
       }
 
-      res.json({
-        success: true,
-        message: "Email verified successfully",
-        data: response.user,
-      });
-    } catch (error) {
-      if (!(error instanceof APIError)) throw error;
-
-      if (
-        (error.headers as Headers)
-          .get("set-cookie")
-          ?.includes("better-auth.session_token")
-      ) {
-        throw new APIError(200, {
-          success: true,
-          message: "Email verified successfully",
-        });
+      // Create account for the user on registration if non exists
+      if (!(await accountService.exists({ userId: user.id }))) {
+        await accountService.createAccount(user.id);
       }
 
-      throw new APIError(error.status, {
+      res.render("successful-email-verification");
+    } catch (error) {
+      console.log("Error verifying email", error);
+      res.render("failed-email-verification", {
         message:
-          (error.headers as Headers)
-            .get("location")
-            ?.split("=")[1]
-            ?.toUpperCase() ?? "Error verifying email",
+          error instanceof APIError
+            ? error.body?.message ?? error.message
+            : error instanceof Error
+            ? error.message
+            : "An error occurred while verifying email",
       });
     }
+  }
+
+  async logout(req: Request, res: Response) {
+    const logoutResponse = await authService.logout(req);
+    const responseBody = await handleRawResponse(res, logoutResponse);
+
+    res.json({
+      success: true,
+      message: "User logged out successfully",
+      ...responseBody,
+    });
+  }
+
+  async googleLogin(
+    req: Request<{}, {}, {}, { callbackUrl: string }>,
+    res: Response
+  ) {
+    const googleResponse = await authService.getGoogleUrl(
+      req.query.callbackUrl
+    );
+
+    res.redirect(googleResponse.url!);
+  }
+
+  async googleCallback(
+    req: Request<{}, {}, {}, { callbackUrl: string }>,
+    res: Response
+  ) {
+    const userSession = await authService.getSession(req);
+
+    if (!userSession?.user)
+      throw new APIError("UNAUTHORIZED", {
+        message: "Error using google login",
+      });
+
+    // Create account for the user on registration if non exists
+    if (!(await accountService.exists({ userId: userSession.user.id }))) {
+      await accountService.createAccount(userSession.user.id);
+    }
+
+    res.redirect(req.query.callbackUrl);
   }
 }
 

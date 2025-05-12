@@ -2,7 +2,7 @@ import "dotenv/config";
 import { betterAuth } from "better-auth";
 import { mongodbAdapter } from "better-auth/adapters/mongodb";
 import { MongoClient } from "mongodb";
-import { sendEmail } from "./mali";
+import { sendEmail } from "./mail";
 import {
   verifyEmailHTMLTemplate,
   verifyEmailTextTemplate,
@@ -18,7 +18,9 @@ export const auth = betterAuth({
     requireEmailVerification: true,
   },
   emailVerification: {
-    sendVerificationEmail: async ({ user, url, token }, request) => {
+    sendVerificationEmail: async ({ user, token }) => {
+      const url = `${process.env.BASE_URL}/api/v1/auth/verify-email?token=${token}&userId=${user.id}`;
+      console.log(`Sent verification email to: ${user.email} - ${url}`);
       await sendEmail({
         to: user.email,
         subject: "Verify your email address",
@@ -27,6 +29,7 @@ export const auth = betterAuth({
       });
     },
     autoSignInAfterVerification: true,
+    sendOnSignUp: true,
   },
   user: {
     modelName: "users",
@@ -39,6 +42,28 @@ export const auth = betterAuth({
         type: "string",
         required: true,
       },
+    },
+  },
+  account: {
+    modelName: "better-auth-accounts",
+  },
+  socialProviders: {
+    google: {
+      prompt: "select_account",
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      mapProfileToUser: (profile) => {
+        return {
+          firstName: profile.given_name,
+          lastName: profile.family_name,
+        };
+      },
+    },
+  },
+  advanced: {
+    defaultCookieAttributes: {
+      sameSite: "none",
+      overwrite: true,
     },
   },
   basePath: "api/v1/better-auth",
