@@ -1,7 +1,7 @@
 import { model, Schema } from "mongoose";
 import {
   Address,
-  identityDocumentTypes,
+  IdentityDocumentTypes,
   User,
   UserModel,
 } from "../types/user.type";
@@ -63,7 +63,6 @@ const userSchema = new Schema<User>(
     },
     phone: {
       type: String,
-      required: [true, "Phone number is required"],
       trim: true,
       minLength: [11, "Phone number must be at least 11 characters long"],
       maxLength: [11, "Phone number cannot exceed 11 characters"],
@@ -72,12 +71,10 @@ const userSchema = new Schema<User>(
       type: Date,
     },
     address: addressSchema,
-    identityDocumentUrl: {
-      type: String,
-    },
+    identityDocuments: [{ type: String }],
     identityDocumentType: {
       type: String,
-      enum: identityDocumentTypes,
+      enum: Object.values(IdentityDocumentTypes),
     },
     points: {
       type: Schema.Types.Decimal128,
