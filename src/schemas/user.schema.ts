@@ -11,41 +11,42 @@ export const userUpdateSchema = Joi.object({
     town: Joi.string(),
     state: Joi.string(),
   }),
-  image: Joi.custom((rawFile: Express.Multer.File) => {
-    const validMimeTypes = /image\/(jpeg|png|jpg|webp)/;
-    const file = Array.isArray(rawFile) ? rawFile[0] : rawFile;
+  
+  // image: Joi.custom((rawFile: Express.Multer.File) => {
+  //   const validMimeTypes = /image\/(jpeg|png|jpg|webp)/;
+  //   const file = Array.isArray(rawFile) ? rawFile[0] : rawFile;
 
-    // 5mb in bytes
-    if (file.size > 5 * 1024 * 1024) {
-      throw new Error("Identity document size must be less than 5MB");
-    }
+  //   // 5mb in bytes
+  //   if (file.size > 5 * 1024 * 1024) {
+  //     throw new Error("Identity document size must be less than 5MB");
+  //   }
 
-    if (!validMimeTypes.test(file.mimetype)) {
-      console.log(file);
-      throw new Error(
-        "Invalid file type! Supported files include image/jpeg, image/png, image/jpg, image/webp"
-      );
-    }
+  //   if (!validMimeTypes.test(file.mimetype)) {
+  //     console.log(file);
+  //     throw new Error(
+  //       "Invalid file type! Supported files include image/jpeg, image/png, image/jpg, image/webp"
+  //     );
+  //   }
 
-    return file;
-  }),
-  identityDocument: Joi.custom((rawFile: Express.Multer.File) => {
-    const validMimeTypes = /image\/(jpeg|png|jpg|webp)|application\/pdf/;
-    const file = Array.isArray(rawFile) ? rawFile[0] : rawFile;
+  //   return file;
+  // }),
+  // identityDocument: Joi.custom((rawFile: Express.Multer.File) => {
+  //   const validMimeTypes = /image\/(jpeg|png|jpg|webp)|application\/pdf/;
+  //   const file = Array.isArray(rawFile) ? rawFile[0] : rawFile;
 
-    // 5mb in bytes
-    if (file.size > 5 * 1024 * 1024) {
-      throw new Error("Identity document size must be less than 5MB");
-    }
+  //   // 5mb in bytes
+  //   if (file.size > 5 * 1024 * 1024) {
+  //     throw new Error("Identity document size must be less than 5MB");
+  //   }
 
-    if (!validMimeTypes.test(file.mimetype)) {
-      throw new Error(
-        "Invalid file type! Supported files include image/jpeg, image/png, image/jpg, image/webp, application/pdf"
-      );
-    }
+  //   if (!validMimeTypes.test(file.mimetype)) {
+  //     throw new Error(
+  //       "Invalid file type! Supported files include image/jpeg, image/png, image/jpg, image/webp, application/pdf"
+  //     );
+  //   }
 
-    return file;
-  }),
+  //   return file;
+  // }),
   dateOfBirth: Joi.date()
     .iso()
     .less("now")
