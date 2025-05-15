@@ -9,6 +9,8 @@ import {
 import { transferController } from "../controllers/transfer.controller";
 import { authMiddleware } from "../middlewares/auth.middleware";
 import { paystackController } from "../controllers/paystack.controller";
+import { borrowLoanSchema } from "../schemas/loan.schema";
+import { loanController } from "../controllers/loan.controller";
 
 export const accountRouter = express.Router();
 
@@ -35,6 +37,13 @@ accountRouter.post(
   validationMiddleware.validate({ path: "body", schema: withdrawSchema }),
   authMiddleware.handleUserVerification,
   transferController.initiateWithdrawal
+);
+
+accountRouter.post(
+  "/loan",
+  validationMiddleware.validate({ path: "body", schema: borrowLoanSchema }),
+  authMiddleware.handleUserVerification,
+  loanController.borrowLoan
 );
 
 accountRouter.get("/banks", paystackController.getBanks);

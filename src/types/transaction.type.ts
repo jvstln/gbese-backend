@@ -16,6 +16,7 @@ export enum TransactionCategories {
   DEBT_TRANSFER = "debt_transfer",
   FUND = "fund",
   WITHDRAWAL = "withdrawal",
+  LOAN = "loan",
 }
 
 export interface ITransaction {

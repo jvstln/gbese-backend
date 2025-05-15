@@ -1,7 +1,7 @@
 import Joi from "joi";
 import Decimal from "decimal.js";
 
-const amountSchema = Joi.alternatives().conditional(Joi.string(), {
+export const amountSchema = Joi.alternatives().conditional(Joi.string(), {
   then: Joi.string()
     .custom((value, helpers) => {
       if (isNaN(Number(value))) {

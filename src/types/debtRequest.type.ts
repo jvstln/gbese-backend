@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import { Request } from "express";
 
 export interface DebtRequestCreation {
   debtorId: mongoose.Types.ObjectId;
