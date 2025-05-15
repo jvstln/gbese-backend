@@ -17,6 +17,10 @@ class LoanService {
     return loanModel.findOne(filters);
   }
 
+  async getLoans(filters: Record<string, unknown>) {
+    return loanModel.find(filters);
+  }
+
   getUsersActiveLoans(accountId: string | mongoose.Types.ObjectId) {
     return loanModel.find({
       accountId,
@@ -106,8 +110,11 @@ class LoanService {
     return dbTransaction;
   }
 
-  async payLoan({ loanId, accountId, amount, isPartialPayment }: PayLoan) {
-    const dbTransaction = await mongoose.connection.transaction(async () => {
+  async payLoan(
+    { loanId, accountId, amount, isPartialPayment }: PayLoan,
+    useTransaction: boolean = true
+  ) {
+    const transactionCallback = async () => {
       const loan = await loanModel.findById(loanId);
       if (!loan) {
         throw new APIError("NOT_FOUND", {
@@ -176,6 +183,7 @@ class LoanService {
         },
       });
 
+      account.balance = balanceAfter.toString();
       loan.amountPaid = new Decimal(loan.amountPaid.toString())
         .add(amount)
         .toString();
@@ -187,11 +195,16 @@ class LoanService {
 
       await loan.save();
       await transaction.save();
+      await account.save();
 
-      return { transaction, loan };
-    });
+      return { transaction, loan, account };
+    };
 
-    return dbTransaction;
+    if (useTransaction) {
+      return await mongoose.connection.transaction(transactionCallback);
+    }
+
+    return transactionCallback();
   }
 }
 

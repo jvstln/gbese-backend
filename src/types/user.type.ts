@@ -22,7 +22,7 @@ export interface User extends UserUpdate {
   _id: string;
   name: string;
   email: string;
-  points: mongoose.Types.Decimal128;
+  points: mongoose.Types.Decimal128 | string;
   account: IAccount;
   image: string;
   emailVerified: boolean;

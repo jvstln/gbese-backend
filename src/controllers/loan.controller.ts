@@ -18,6 +18,18 @@ class LoanController {
       data: borrowedLoanData,
     });
   }
+
+  async getUserLoans(req: Request, res: Response) {
+    const userLoans = await loanService.getLoans({
+      accountId: req.userSession!.user.account._id.toString(),
+    });
+
+    res.json({
+      success: true,
+      message: "User loans retrieved successfully",
+      data: userLoans,
+    });
+  }
 }
 
 export const loanController = new LoanController();

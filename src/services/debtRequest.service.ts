@@ -9,6 +9,7 @@ import mongoose from "mongoose";
 import { userService } from "./user.service";
 import { User } from "../types/user.type";
 import { loanService } from "./loan.service";
+import Decimal from "decimal.js";
 
 class DebtRequestService {
   async createDebtRequest(currentUser: User, data: DebtRequestCreation) {
@@ -40,9 +41,9 @@ class DebtRequestService {
       loan = activeLoans[0];
     }
 
-    // If no amount is specified, The amount becomes the total loans amount
+    // If no amount is specified, The amount becomes the total loan amount
     if (!data.amount) {
-      data.amount = loan.getPayableAmount();
+      data.amount = loan.totalAmountToBePaid;
     }
 
     const debtRequest = new debtRequestModel({
@@ -104,12 +105,22 @@ class DebtRequestService {
     }
 
     const payedDebtRequest = await mongoose.connection.transaction(async () => {
-      const loanPayment = await loanService.payLoan({
-        loanId: debtRequest._id.toString(),
-        accountId: payer.account._id.toString(),
-        amount: debtRequest.amount.toString(),
-        isPartialPayment: false,
-      });
+      // Add points for clearing a debt to user
+      payer.points = new Decimal(payer.points.toString())
+        .add(debtRequest.debtPoint.toString())
+        .toString();
+
+      await payer.save();
+
+      const loanPayment = await loanService.payLoan(
+        {
+          loanId: debtRequest.loanId.toString(),
+          accountId: payer.account._id.toString(),
+          amount: debtRequest.amount.toString(),
+          isPartialPayment: false,
+        },
+        false
+      );
 
       debtRequest.status = DebtRequestStatuses.ACCEPTED;
       await debtRequest.save();

@@ -18,7 +18,8 @@ export interface Loan {
   disbursedAt: Date;
   nextDueDate: Date;
   metadata: object;
-  getPayableAmount(): string;
+  totalAmountToBePaid: string;
+  amountRemaining: string;
 }
 
 export interface LoanModel extends mongoose.Model<Loan> {
@@ -44,4 +45,8 @@ export interface PayLoan {
   accountId: string;
   amount: string;
   isPartialPayment?: boolean;
+}
+
+export interface LoanFilters {
+  status?: LoanStatuses;
 }

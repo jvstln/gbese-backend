@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 export interface DebtRequestCreation {
   debtorId: mongoose.Types.ObjectId;
-  loanId?: mongoose.Types.ObjectId;
+  loanId: mongoose.Types.ObjectId;
   payerId?: mongoose.Types.ObjectId;
   amount: mongoose.Types.Decimal128 | string;
   description?: string;

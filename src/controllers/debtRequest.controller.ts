@@ -77,7 +77,6 @@ class DebtRequestController {
 
   async payDebtRequest(req: Request, res: Response) {
     const { debtRequestId } = req.params;
-    const updates = req.body;
 
     const payedDebtRequest = await debtRequestService.payDebtRequest(
       debtRequestId,

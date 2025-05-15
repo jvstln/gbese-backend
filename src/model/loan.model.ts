@@ -55,14 +55,17 @@ const loanSchema = new Schema<Loan, LoanModel>(
         return { amount: 50_000, durationInDays: 30, activeLoans: 1 };
       },
     },
-    methods: {
-      getPayableAmount() {
-        return new Decimal(this.principal.toString()).add(
-          new Decimal(this.principal.toString()).mul(this.interestRate)
-        );
-      },
-    },
   }
 );
+
+loanSchema.virtual("totalAmountToBePaid").get(function (this) {
+  return new Decimal(this.principal.toString()).add(
+    new Decimal(this.principal.toString()).mul(this.interestRate)
+  );
+});
+
+loanSchema.virtual("amountRemaining").get(function (this) {
+  return new Decimal(this.totalAmountToBePaid).sub(this.amountPaid.toString());
+});
 
 export const loanModel = mongoose.model<Loan, LoanModel>("Loan", loanSchema);
