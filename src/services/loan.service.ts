@@ -13,6 +13,10 @@ import { accountService } from "./account.service";
 import { transactionService } from "./transaction.service";
 
 class LoanService {
+  async exists(filters: Record<string, unknown>) {
+    return loanModel.exists(filters);
+  }
+
   async getLoan(filters: Record<string, unknown>) {
     return loanModel.findOne(filters);
   }

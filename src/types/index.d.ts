@@ -1,3 +1,4 @@
+import { userModel } from "../model/user.model";
 import { User } from "./user.type";
 
 declare module "express" {

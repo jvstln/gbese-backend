@@ -66,7 +66,8 @@ class DebtRequestController {
 
     const updatedDebtTransfer = await debtRequestService.updateDebtRequest(
       debtRequestId,
-      updates
+      updates,
+      req.userSession!.user
     );
     res.status(200).json({
       success: true,
@@ -87,6 +88,17 @@ class DebtRequestController {
       success: true,
       message: "Debt request paid successfully",
       data: payedDebtRequest,
+    });
+  }
+
+  async getShuffledDebtRequests(req: Request, res: Response) {
+    const shuffledDebtRequests =
+      await debtRequestService.getShuffledDebtRequests(req.userSession!.user);
+
+    res.status(200).json({
+      success: true,
+      message: "Shuffled debt requests fetched successfully",
+      data: shuffledDebtRequests,
     });
   }
 }

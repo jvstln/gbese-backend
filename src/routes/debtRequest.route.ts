@@ -30,6 +30,11 @@ debtRequestRouter.get(
 );
 debtRequestRouter.get("/all", debtRequestController.getAllDebtRequests);
 
+debtRequestRouter.get(
+  "/shuffle",
+  debtRequestController.getShuffledDebtRequests
+);
+
 debtRequestRouter.patch(
   "/:debtRequestId",
   validationMiddleware.validate([

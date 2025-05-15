@@ -50,14 +50,33 @@ class DebtRequestService {
       ...data,
       loanId: loan._id,
     });
-    return await debtRequest.save();
+    await debtRequest.save();
+    return debtRequest.populate("debtor payer");
   }
 
   async getDebtRequests(filters: Record<string, unknown> = {}) {
     return debtRequestModel.find(filters).populate("debtor payer loan");
   }
 
-  async updateDebtRequest(id: string, updates: Partial<DebtRequestCreation>) {
+  async updateDebtRequest(
+    id: string,
+    updates: Partial<DebtRequestCreation>,
+    user: User
+  ) {
+    // Get the loan associated to the debt request
+    if (updates.loanId) {
+      const loan = await loanService.exists({
+        _id: updates.loanId,
+        accountId: user.account._id,
+      });
+
+      if (!loan) {
+        throw new APIError("UNPROCESSABLE_ENTITY", {
+          message: "User has no loan with the specified ID",
+        });
+      }
+    }
+
     const debtRequest = await debtRequestModel.findById(id);
 
     if (!debtRequest) {
@@ -70,6 +89,20 @@ class DebtRequestService {
 
     const updatedDebtRequest = await debtRequest.save();
     return updatedDebtRequest.populate("debtor payer");
+  }
+
+  /**
+   * Gets all debt request a user can pay/clear
+   */
+  async getShuffledDebtRequests(user: User) {
+    const debtRequests = await this.getDebtRequests({
+      payerId: { $in: [user._id, null] },
+      debtorId: { $ne: user._id },
+      status: DebtRequestStatuses.PENDING,
+      amount: { $lte: user.account.balance },
+    });
+
+    return debtRequests;
   }
 
   async getDebtStatistics(userId: string) {
@@ -94,11 +127,13 @@ class DebtRequestService {
       });
     }
 
-    const payer = await userService.getUser({ _id: debtRequest.payerId });
+    const payer = await userService.getUser({
+      _id: debtRequest.payerId ?? currentUser._id,
+    });
 
-    const isPayerTheCurrentUser =
-      payer && payer._id.toString() === currentUser._id.toString();
-    if (!payer || !isPayerTheCurrentUser) {
+    // Check whether the payer is eligible to pay this debt request.
+    // A payer is eligible if he is explicitly stated as the payer or if the payer is not specified
+    if (!payer || payer._id.toString() !== currentUser._id.toString()) {
       throw new APIError("UNPROCESSABLE_ENTITY", {
         message: "You are not meant to pay this debt.",
       });
