@@ -30,6 +30,19 @@ class LoanService {
     });
   }
 
+  async getLoanStatistics(accountId: string) {
+    const activeLoans = await this.getUsersActiveLoans(accountId);
+    const totalAmountInDebt = activeLoans.reduce(
+      (total, loan) => total.add(loan.totalAmountToBePaid),
+      new Decimal(0)
+    );
+
+    return {
+      totalAmountInDebt,
+      totalLoanCount: activeLoans.length,
+    };
+  }
+
   async borrowLoan({
     accountId,
     amount,

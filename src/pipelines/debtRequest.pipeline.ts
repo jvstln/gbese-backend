@@ -50,7 +50,7 @@ export const getDebtStatisticsPipeline = (userId: string) => [
   },
   {
     $project: {
-      totalDebtAmountPaidByUser: {
+      totalDebtRequestAmountPaidByUser: {
         $ifNull: [
           {
             $toString: {
@@ -60,7 +60,7 @@ export const getDebtStatisticsPipeline = (userId: string) => [
           "0",
         ],
       },
-      totalDebtCountPaidByUser: {
+      totalDebtRequestCountPaidByUser: {
         $ifNull: [
           {
             $toString: {
@@ -70,7 +70,7 @@ export const getDebtStatisticsPipeline = (userId: string) => [
           "0",
         ],
       },
-      totalDebtPointsEarnedByUser: {
+      totalDebtRequestPointsEarnedByUser: {
         $ifNull: [
           {
             $toString: {
@@ -80,7 +80,7 @@ export const getDebtStatisticsPipeline = (userId: string) => [
           "0",
         ],
       },
-      totalDebtAmountPaidForUser: {
+      totalDebtRequestAmountPaidForUser: {
         $ifNull: [
           {
             $toString: {
@@ -93,20 +93,7 @@ export const getDebtStatisticsPipeline = (userId: string) => [
           "0",
         ],
       },
-      totalPendingDebtAmountCreatedByUser: {
-        $ifNull: [
-          {
-            $toString: {
-              $arrayElemAt: [
-                "$createdAndPendingDebt.totalPendingDebtAmountCreatedByUser",
-                0,
-              ],
-            },
-          },
-          "0",
-        ],
-      },
-      totalPendingDebtCountCreatedByUser: {
+      totalPendingDebtRequestCountCreatedByUser: {
         $ifNull: [
           {
             $toString: {
@@ -119,7 +106,7 @@ export const getDebtStatisticsPipeline = (userId: string) => [
           "0",
         ],
       },
-      totalRejectedDebtAmountCreatedByUser: {
+      totalRejectedDebtRequestAmountCreatedByUser: {
         $ifNull: [
           {
             $toString: {

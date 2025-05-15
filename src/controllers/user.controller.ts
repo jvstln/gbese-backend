@@ -1,18 +1,25 @@
 import { Request, Response } from "express";
 import { userService } from "../services/user.service";
 import { debtRequestService } from "../services/debtRequest.service";
+import { loanService } from "../services/loan.service";
 
 class UserController {
   async getUser(req: Request, res: Response) {
     const debtRequestStats = await debtRequestService.getDebtStatistics(
       req.userSession!.user._id
     );
+    const loanStats = await loanService.getLoanStatistics(
+      req.userSession!.user.account._id.toString()
+    );
 
     res.json({
       success: true,
       message: "User details fetched successfully",
       data: req.userSession!.user,
-      metadata: debtRequestStats,
+      metadata: {
+        ...debtRequestStats,
+        ...loanStats,
+      },
     });
   }
 
