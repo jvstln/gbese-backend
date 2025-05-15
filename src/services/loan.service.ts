@@ -13,6 +13,19 @@ import { accountService } from "./account.service";
 import { transactionService } from "./transaction.service";
 
 class LoanService {
+  async getLoan(filters: Record<string, unknown>) {
+    return loanModel.findOne(filters);
+  }
+
+  getUsersActiveLoans(accountId: string | mongoose.Types.ObjectId) {
+    return loanModel.find({
+      accountId,
+      status: {
+        $in: [LoanStatuses.ACTIVE, LoanStatuses.PENDING],
+      },
+    });
+  }
+
   async borrowLoan({
     accountId,
     amount,
@@ -44,12 +57,9 @@ class LoanService {
         });
       }
 
-      const activeLoanCount = await loanModel.countDocuments({
-        accountId,
-        status: {
-          $in: [LoanStatuses.ACTIVE, LoanStatuses.PENDING],
-        },
-      });
+      const activeLoanCount = await this.getUsersActiveLoans(
+        accountId
+      ).countDocuments();
       if (activeLoanCount >= limits.activeLoans) {
         throw new APIError("UNPROCESSABLE_ENTITY", {
           message: "User has already reached maximum active loans limit.",

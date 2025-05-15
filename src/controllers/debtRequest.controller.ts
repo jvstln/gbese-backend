@@ -9,7 +9,10 @@ class DebtRequestController {
   async createDebtRequest(req: Request, res: Response) {
     req.body.debtorId = req.userSession!.user._id;
 
-    const debtTransfer = await debtRequestService.createDebtRequest(req.body);
+    const debtTransfer = await debtRequestService.createDebtRequest(
+      req.userSession!.user,
+      req.body
+    );
 
     res.status(201).json({
       success: true,

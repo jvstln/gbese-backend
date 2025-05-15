@@ -11,13 +11,49 @@ import { User } from "../types/user.type";
 import { loanService } from "./loan.service";
 
 class DebtRequestService {
-  async createDebtRequest(data: DebtRequestCreation) {
-    const debtRequest = new debtRequestModel(data);
+  async createDebtRequest(currentUser: User, data: DebtRequestCreation) {
+    let loan;
+
+    // Get the loan associated to the debt request
+    if (data.loanId) {
+      loan = await loanService.getLoan({
+        _id: data.loanId,
+        accountId: currentUser.account._id,
+      });
+
+      if (!loan) {
+        throw new APIError("UNPROCESSABLE_ENTITY", {
+          message: "User has no loan with the specified ID",
+        });
+      }
+    } else {
+      // Pick the first active loan of the user
+      const activeLoans = await loanService.getUsersActiveLoans(
+        currentUser.account._id
+      );
+
+      if (activeLoans.length === 0) {
+        throw new APIError("UNPROCESSABLE_ENTITY", {
+          message: "User is currently not in debt.",
+        });
+      }
+      loan = activeLoans[0];
+    }
+
+    // If no amount is specified, The amount becomes the total loans amount
+    if (!data.amount) {
+      data.amount = loan.getPayableAmount();
+    }
+
+    const debtRequest = new debtRequestModel({
+      ...data,
+      loanId: loan._id,
+    });
     return await debtRequest.save();
   }
 
   async getDebtRequests(filters: Record<string, unknown> = {}) {
-    return debtRequestModel.find(filters).populate("debtor payer");
+    return debtRequestModel.find(filters).populate("debtor payer loan");
   }
 
   async updateDebtRequest(id: string, updates: Partial<DebtRequestCreation>) {

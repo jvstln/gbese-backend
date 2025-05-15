@@ -1,5 +1,6 @@
 import mongoose, { Schema } from "mongoose";
 import { Loan, LoanModel, LoanStatuses } from "../types/loan.type";
+import Decimal from "decimal.js";
 
 const loanSchema = new Schema<Loan, LoanModel>(
   {
@@ -52,6 +53,13 @@ const loanSchema = new Schema<Loan, LoanModel>(
     statics: {
       getLoanLimit(this, accumulatedDebtPoint: string) {
         return { amount: 50_000, durationInDays: 30, activeLoans: 1 };
+      },
+    },
+    methods: {
+      getPayableAmount() {
+        return new Decimal(this.principal.toString()).add(
+          new Decimal(this.principal.toString()).mul(this.interestRate)
+        );
       },
     },
   }

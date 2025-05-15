@@ -9,6 +9,7 @@ const debtRequestPayload = {
   payerId: Joi.string(),
   amount: amountSchema,
   description: Joi.string(),
+  loanId: Joi.string(),
 };
 
 export const debtRequestCreationSchema = Joi.object(debtRequestPayload);

@@ -18,6 +18,7 @@ export interface Loan {
   disbursedAt: Date;
   nextDueDate: Date;
   metadata: object;
+  getPayableAmount(): string;
 }
 
 export interface LoanModel extends mongoose.Model<Loan> {

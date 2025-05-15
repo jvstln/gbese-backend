@@ -17,6 +17,10 @@ const debtRequestSchema = new Schema<DebtRequest>(
       ref: "User",
       validate: userModel.validateUserExistence.bind(userModel),
     },
+    loanId: {
+      type: Schema.Types.ObjectId,
+      ref: "Loan",
+    },
     amount: {
       type: Schema.Types.Decimal128,
       required: [true, "Debt amount is required"],
@@ -80,6 +84,13 @@ debtRequestSchema.virtual("debtor", {
 debtRequestSchema.virtual("payer", {
   ref: "User",
   localField: "payerId",
+  foreignField: "_id",
+  justOne: true,
+});
+
+debtRequestSchema.virtual("loan", {
+  ref: "Loan",
+  localField: "loanId",
   foreignField: "_id",
   justOne: true,
 });
