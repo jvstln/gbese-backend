@@ -10,9 +10,9 @@ export enum LoanStatuses {
 export interface Loan {
   _id: string;
   accountId: mongoose.Types.ObjectId;
-  principal: mongoose.Types.Decimal128;
+  principal: mongoose.Types.Decimal128 | string;
   interestRate: number;
-  amountPaid: mongoose.Types.Decimal128;
+  amountPaid: mongoose.Types.Decimal128 | string;
   durationInDays: number;
   status: LoanStatuses;
   disbursedAt: Date;
@@ -33,7 +33,14 @@ export interface LoanModel extends mongoose.Model<Loan> {
 
 export interface BorrowLoan {
   accountId: string;
-  amount: number;
+  amount: string;
   durationInDays: number;
   description?: string;
+}
+
+export interface PayLoan {
+  loanId: string;
+  accountId: string;
+  amount: string;
+  isPartialPayment?: boolean;
 }

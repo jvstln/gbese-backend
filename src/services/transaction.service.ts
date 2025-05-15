@@ -4,6 +4,14 @@ import { TransactionFilters } from "../types/transaction.type";
 import { formatPaginatedDocs } from "../utils/utils";
 
 class TransactionService {
+  async getTransaction(filter: Record<string, unknown>) {
+    return transactionModel.findOne(filter);
+  }
+
+  declare(...args: ConstructorParameters<typeof transactionModel>) {
+    return new transactionModel(...args);
+  }
+
   async getUserTransactions(userId: string, filters: TransactionFilters) {
     const matchStage: Record<string, unknown> = {
       "account.userId": new mongoose.Types.ObjectId(userId),

@@ -3,13 +3,14 @@ import { loanModel } from "../model/loan.model";
 import { transactionModel } from "../model/transaction.model";
 import { APIError } from "better-auth/api";
 import Decimal from "decimal.js";
-import { BorrowLoan, LoanStatuses } from "../types/loan.type";
+import { BorrowLoan, LoanStatuses, PayLoan } from "../types/loan.type";
 import {
   TransactionCategories,
   TransactionStatuses,
   TransactionTypes,
 } from "../types/transaction.type";
 import { accountService } from "./account.service";
+import { transactionService } from "./transaction.service";
 
 class LoanService {
   async borrowLoan({
@@ -90,6 +91,94 @@ class LoanService {
       await loan.save();
 
       return { loan, transaction, account };
+    });
+
+    return dbTransaction;
+  }
+
+  async payLoan({ loanId, accountId, amount, isPartialPayment }: PayLoan) {
+    const dbTransaction = await mongoose.connection.transaction(async () => {
+      const loan = await loanModel.findById(loanId);
+      if (!loan) {
+        throw new APIError("NOT_FOUND", {
+          message: "Loan not found.",
+        });
+      }
+
+      if (loan.status !== LoanStatuses.ACTIVE) {
+        throw new APIError("UNPROCESSABLE_ENTITY", {
+          message: "Loan is not active.",
+        });
+      }
+
+      const account = await accountService.getAccount({ _id: accountId });
+      if (!account) {
+        throw new APIError("BAD_REQUEST", {
+          message: "User account not found.",
+        });
+      }
+
+      if (new Decimal(loan.principal.toString()).lt(amount)) {
+        throw new APIError("UNPROCESSABLE_ENTITY", {
+          message: "Loan amount is less than the payment amount.",
+          loanAmount: loan.principal.toString(),
+          paymentAmount: amount,
+        });
+      }
+
+      if (
+        !isPartialPayment &&
+        !new Decimal(loan.principal.toString()).eq(amount)
+      ) {
+        throw new APIError("UNPROCESSABLE_ENTITY", {
+          message: "Loan amount does not match the payment amount.",
+          loanAmount: loan.principal.toString(),
+          paymentAmount: amount,
+        });
+      }
+
+      const balanceBefore = account.balance;
+      const balanceAfter = new Decimal(balanceBefore.toString()).sub(amount);
+
+      if (balanceAfter.lt(0)) {
+        throw new APIError("UNPROCESSABLE_ENTITY", {
+          message: "Insufficient balance.",
+        });
+      }
+
+      const disbursementTransaction = await transactionService.getTransaction({
+        accountId: loan.accountId,
+        type: TransactionTypes.CREDIT,
+        category: TransactionCategories.LOAN,
+        "metadata.loanId": loan._id,
+      });
+
+      const transaction = transactionService.declare({
+        accountId,
+        type: TransactionTypes.DEBIT,
+        category: TransactionCategories.LOAN,
+        balanceBefore,
+        balanceAfter,
+        description: disbursementTransaction?.description,
+        status: TransactionStatuses.SUCCESS,
+        metadata: {
+          loanId: loan._id,
+        },
+      });
+
+      loan.amountPaid = new Decimal(loan.amountPaid.toString())
+        .add(amount)
+        .toString();
+      if (
+        new Decimal(loan.amountPaid.toString()).eq(loan.principal.toString())
+      ) {
+        loan.status = LoanStatuses.REPAID;
+      }
+
+      await loan.save();
+      await transaction.save();
+
+      return { transaction, loan };
     });
 
     return dbTransaction;

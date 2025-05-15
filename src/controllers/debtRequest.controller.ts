@@ -26,8 +26,7 @@ class DebtRequestController {
     const userId = req.userSession!.user._id;
     let filter: Record<string, unknown> = {};
 
-    if (role === DebtRequestUserRoles.CREDITOR) filter.creditorId = userId;
-    else if (role === DebtRequestUserRoles.DEBTOR) filter.debtorId = userId;
+    if (role === DebtRequestUserRoles.DEBTOR) filter.debtorId = userId;
     else if (role === DebtRequestUserRoles.PAYER) filter.payerId = userId;
     else {
       filter = {
