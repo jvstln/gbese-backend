@@ -41,9 +41,9 @@ class DebtRequestService {
       loan = activeLoans[0];
     }
 
-    // If no amount is specified, The amount becomes the total loan amount
+    // If no amount is specified, The amount becomes the remaining loan amount to be paid
     if (!data.amount) {
-      data.amount = loan.totalAmountToBePaid;
+      data.amount = loan.amountRemaining;
     }
 
     const debtRequest = new debtRequestModel({
@@ -117,7 +117,6 @@ class DebtRequestService {
           loanId: debtRequest.loanId.toString(),
           accountId: payer.account._id.toString(),
           amount: debtRequest.amount.toString(),
-          isPartialPayment: false,
         },
         false
       );

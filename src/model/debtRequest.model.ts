@@ -67,7 +67,7 @@ debtRequestSchema.pre("save", function (next) {
   // ensure that the debtor and the payer are not the same
   if (this.debtorId.toString() === this.payerId?.toString()) {
     throw new APIError("UNPROCESSABLE_ENTITY", {
-      message: "You (Debtor) cannot be the same or payer",
+      message: "You (Debtor) cannot be the same as the payer",
     });
   }
 

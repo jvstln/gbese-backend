@@ -43,8 +43,7 @@ export interface BorrowLoan {
 export interface PayLoan {
   loanId: string;
   accountId: string;
-  amount: string;
-  isPartialPayment?: boolean;
+  amount?: string;
 }
 
 export interface LoanFilters {

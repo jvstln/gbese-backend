@@ -111,7 +111,7 @@ class LoanService {
   }
 
   async payLoan(
-    { loanId, accountId, amount, isPartialPayment }: PayLoan,
+    { loanId, accountId, amount: defaultAmount }: PayLoan,
     useTransaction: boolean = true
   ) {
     const transactionCallback = async () => {
@@ -128,6 +128,12 @@ class LoanService {
         });
       }
 
+      // If amount is not specified, the amount becomes the total loan amount
+      const amount =
+        !defaultAmount || new Decimal(defaultAmount).gt(loan.amountRemaining)
+          ? loan.amountRemaining
+          : defaultAmount;
+
       const account = await accountService.getAccount({ _id: accountId });
       if (!account) {
         throw new APIError("BAD_REQUEST", {
@@ -135,21 +141,10 @@ class LoanService {
         });
       }
 
-      if (new Decimal(loan.principal.toString()).lt(amount)) {
+      if (new Decimal(loan.totalAmountToBePaid).lt(amount)) {
         throw new APIError("UNPROCESSABLE_ENTITY", {
           message: "Loan amount is less than the payment amount.",
-          loanAmount: loan.principal.toString(),
-          paymentAmount: amount,
-        });
-      }
-
-      if (
-        !isPartialPayment &&
-        !new Decimal(loan.principal.toString()).eq(amount)
-      ) {
-        throw new APIError("UNPROCESSABLE_ENTITY", {
-          message: "Loan amount does not match the payment amount.",
-          loanAmount: loan.principal.toString(),
+          loanAmount: loan.totalAmountToBePaid,
           paymentAmount: amount,
         });
       }
@@ -188,7 +183,7 @@ class LoanService {
         .add(amount)
         .toString();
       if (
-        new Decimal(loan.amountPaid.toString()).eq(loan.principal.toString())
+        new Decimal(loan.amountPaid.toString()).gte(loan.principal.toString())
       ) {
         loan.status = LoanStatuses.REPAID;
       }
