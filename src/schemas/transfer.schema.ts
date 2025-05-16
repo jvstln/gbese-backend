@@ -34,6 +34,9 @@ export const fundAccountSchema = Joi.object({
 
 export const withdrawSchema = Joi.object({
   amount: amountSchema.required(),
-  accountNumber: Joi.string().required(),
-  bankCode: Joi.string().required(),
+  accountNumber: [
+    Joi.string().required(),
+    Joi.number().required().cast("string"),
+  ],
+  bankCode: [Joi.string().required(), Joi.number().required().cast("string")],
 });

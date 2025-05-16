@@ -12,6 +12,9 @@ const client = new MongoClient(process.env.MONGODB_URI!);
 const db = client.db();
 
 export const auth = betterAuth({
+  appName: "GBESE",
+  baseURL: process.env.BASE_URL,
+  basePath: "api/v1/better-auth",
   database: mongodbAdapter(db),
   emailAndPassword: {
     enabled: true,
@@ -60,12 +63,16 @@ export const auth = betterAuth({
       },
     },
   },
+  session: {
+    cookieCache: {
+      enabled: true,
+      maxAge: 60 * 60, // 1hr in seconds
+    },
+  },
   advanced: {
     defaultCookieAttributes: {
       sameSite: "none",
       overwrite: true,
     },
   },
-  baseURL: process.env.BASE_URL,
-  basePath: "api/v1/better-auth",
 });
