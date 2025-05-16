@@ -4,7 +4,7 @@ import { IdentityDocumentTypes } from "../types/user.type";
 export const userUpdateSchema = Joi.object({
   firstName: Joi.string().min(3).max(40),
   lastName: Joi.string().min(3).max(40),
-  phone: Joi.string().length(11),
+  phone: Joi.string(),
   address: Joi.object({
     number: Joi.string(),
     street: Joi.string(),
