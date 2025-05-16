@@ -43,7 +43,6 @@ const debtRequestSchema = new Schema<DebtRequest>(
   },
   {
     timestamps: true,
-    versionKey: false,
     methods: {
       getDebtPoint: function () {
         /**

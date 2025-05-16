@@ -5,6 +5,7 @@ export enum IdentityDocumentTypes {
   NIN = "nin",
   PASSPORT = "passport",
   BVN = "bvn",
+  DRIVERS_LICENSE = "drivers_license",
 }
 
 export interface UserUpdate {

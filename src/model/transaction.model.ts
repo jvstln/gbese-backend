@@ -58,7 +58,6 @@ const transactionSchema = new Schema<ITransaction>(
   },
   {
     timestamps: true,
-    versionKey: false,
   }
 );
 

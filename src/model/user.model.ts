@@ -85,6 +85,7 @@ const userSchema = new Schema<User>(
   },
   {
     timestamps: true,
+    id: false,
     statics: {
       async validateUserExistence(userId: string) {
         const userExists = await this.exists({ _id: userId });
