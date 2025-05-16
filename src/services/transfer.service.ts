@@ -40,7 +40,7 @@ export class TransferService {
         });
       }
 
-      if (fromAccountId === toAccountId) {
+      if (fromAccountId.toString() === toAccountId.toString()) {
         throw new APIError("BAD_REQUEST", {
           message: "Sender and receiver accounts cannot be the same",
         });
