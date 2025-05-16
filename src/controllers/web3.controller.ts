@@ -1,0 +1,159 @@
+import "dotenv/config";
+import { Request, Response } from "express";
+import { ethers } from "ethers";
+import KYCVerifierABI from "../abi/KYCVerifier.json";
+import GbeseTokenABI from "../abi/GbeseToken.json";
+import { APIError } from "better-auth/api";
+import { Web3Withdraw } from "../types/web3.type";
+import Decimal from "decimal.js";
+import { accountService } from "../services/account.service";
+import { transactionService } from "../services/transaction.service";
+import {
+  TransactionCategories,
+  TransactionStatuses,
+  TransactionTypes,
+} from "../types/transaction.type";
+import mongoose from "mongoose";
+
+class Web3Controller {
+  provider = new ethers.JsonRpcProvider(process.env.BASE_SEPOLIA_RPC_URL);
+  kycAddr = process.env.KYC_CONTRACT_ADDRESS!;
+  privateKey = process.env.PRIVATE_KEY!;
+  signer = new ethers.Wallet(this.privateKey, this.provider);
+  kycContract = new ethers.Contract(
+    this.kycAddr,
+    KYCVerifierABI.abi,
+    this.signer
+  );
+  tokenContract = new ethers.Contract(
+    process.env.GBESE_TOKEN_CONTRACT_ADDRESS!,
+    GbeseTokenABI.abi,
+    this.signer
+  );
+
+  async verifyKYC(req: Request, res: Response) {
+    const { wallet } = req.body;
+    if (!ethers.isAddress(wallet)) {
+      throw new APIError("BAD_REQUEST", {
+        message: "Invalid wallet address",
+      });
+    }
+
+    try {
+      const issuedAt = Math.floor(Date.now() / 1000);
+
+      const domain = {
+        name: "KYCVerifier",
+        version: "1",
+        chainId: 84532,
+        verifyingContract: this.kycAddr,
+      };
+
+      const types = { KYCVerification: [{ name: "wallet", type: "address" }] };
+
+      const value = { wallet: "0xWalletAddressToVerify" };
+
+      const signature = await this.signer.signTypedData(domain, types, value);
+
+      const tx = await this.kycContract.verifyKYC(wallet, issuedAt, signature);
+      const receipt = await tx.wait();
+
+      res.json({
+        success: true,
+        txHash: receipt.transactionHash,
+        blockNumber: receipt.blockNumber,
+      });
+    } catch (err: any) {
+      console.error("KYC verification failed:", err);
+      throw new APIError("INTERNAL_SERVER_ERROR", {
+        message: "KYC verification failed",
+      });
+    }
+  }
+
+  /**
+   * Withdraw NGN balance into GBT and send to user's wallet
+   * Body: { walletAddress: string; amountNGN: number; }
+   */
+  async withdrawToWallet(req: Request<{}, {}, Web3Withdraw>, res: Response) {
+    try {
+      const { walletAddress, amountNGN, description } = req.body;
+
+      const dbTransaction = await mongoose.connection.transaction(async () => {
+        // Get the user account document
+        const account = await accountService.getAccount({
+          userId: req.userSession!.user._id,
+        });
+
+        if (!account) {
+          throw new APIError("BAD_REQUEST", {
+            message: "User Account not found",
+          });
+        }
+
+        // Check and validate off‐chain NGN balance
+        const balanceNGN = account.balance;
+        if (new Decimal(balanceNGN.toString()).lt(amountNGN)) {
+          throw new APIError("UNPROCESSABLE_ENTITY", {
+            message: "Insufficient NGN balance",
+          });
+        }
+
+        // Compute GBT amount at ₦1,600 = 1 GBT
+        const gbtAmount = ethers.parseUnits(
+          new Decimal(amountNGN).div(1600).toFixed(18), // as string
+          18
+        );
+
+        // Mint GBT to user’s wallet
+        const tx = await this.tokenContract.mint(walletAddress, gbtAmount);
+        const receipt = await tx.wait();
+
+        // Create transaction record
+        const transaction = transactionService.declare({
+          accountId: account._id,
+          amount: amountNGN,
+          type: TransactionTypes.DEBIT,
+          category: TransactionCategories.WEB3_WITHDRAWAL,
+          balanceBefore: account.balance,
+          metadata: {
+            gbtAmount,
+            walletAddress,
+            receipt,
+          },
+          description,
+        });
+
+        // Debit user's NGN balance off‐chain
+        account.balance = new Decimal(account.balance.toString())
+          .sub(amountNGN)
+          .toString();
+        await account.save();
+
+        // Save transaction record
+        transaction.balanceAfter = account.balance;
+        transaction.status = TransactionStatuses.SUCCESS;
+        await transaction.save();
+
+        return {
+          transaction,
+          receipt,
+          gbtAmount,
+        };
+      });
+
+      res.json({
+        success: true,
+        message: "Withdrawal to wallet successful",
+        data: dbTransaction,
+      });
+    } catch (err: any) {
+      console.error("Withdraw to wallet failed:", err);
+      throw new APIError("INTERNAL_SERVER_ERROR", {
+        message: "Withdraw to wallet failed",
+      });
+    }
+  }
+}
+
+export const web3Controller = new Web3Controller();

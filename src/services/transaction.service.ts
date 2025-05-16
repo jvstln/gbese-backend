@@ -1,6 +1,9 @@
 import mongoose from "mongoose";
 import { transactionModel } from "../model/transaction.model";
-import { TransactionFilters } from "../types/transaction.type";
+import {
+  TransactionCreation,
+  TransactionFilters,
+} from "../types/transaction.type";
 import { formatPaginatedDocs } from "../utils/utils";
 
 class TransactionService {
@@ -8,8 +11,8 @@ class TransactionService {
     return transactionModel.findOne(filter);
   }
 
-  declare(...args: ConstructorParameters<typeof transactionModel>) {
-    return new transactionModel(...args);
+  declare(data: Partial<TransactionCreation>) {
+    return new transactionModel(data);
   }
 
   async getUserTransactions(userId: string, filters: TransactionFilters) {

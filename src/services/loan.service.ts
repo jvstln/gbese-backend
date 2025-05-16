@@ -1,6 +1,5 @@
 import mongoose from "mongoose";
 import { loanModel } from "../model/loan.model";
-import { transactionModel } from "../model/transaction.model";
 import { APIError } from "better-auth/api";
 import Decimal from "decimal.js";
 import { BorrowLoan, LoanStatuses, PayLoan } from "../types/loan.type";
@@ -92,12 +91,12 @@ class LoanService {
       const balanceAfter = new Decimal(balanceBefore.toString()).add(amount);
 
       // Create disbursement transaction
-      const transaction = new transactionModel({
+      const transaction = transactionService.declare({
         accountId: account._id,
         type: TransactionTypes.CREDIT,
         category: TransactionCategories.LOAN,
         balanceBefore,
-        balanceAfter,
+        balanceAfter: balanceAfter.toString(),
         description,
         status: TransactionStatuses.SUCCESS,
       });
@@ -187,7 +186,7 @@ class LoanService {
         type: TransactionTypes.DEBIT,
         category: TransactionCategories.LOAN,
         balanceBefore,
-        balanceAfter,
+        balanceAfter: balanceAfter.toString(),
         description: disbursementTransaction?.description,
         status: TransactionStatuses.SUCCESS,
         metadata: {

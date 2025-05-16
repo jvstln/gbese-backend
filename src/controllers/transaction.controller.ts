@@ -8,7 +8,6 @@ class TransactionController {
     req: Request<{}, {}, {}, TransactionFilters>,
     res: Response
   ) {
-    console.log(req.query);
     const transactions = await transactionService.getUserTransactions(
       req.userSession!.user._id.toString(),
       req.query

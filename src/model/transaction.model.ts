@@ -49,7 +49,7 @@ const transactionSchema = new Schema<ITransaction>(
     status: {
       type: String,
       enum: Object.values(TransactionStatuses),
-      default: TransactionStatuses.SUCCESS,
+      default: TransactionStatuses.PENDING,
     },
     metadata: {
       type: Object,

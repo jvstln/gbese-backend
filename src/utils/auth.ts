@@ -66,5 +66,6 @@ export const auth = betterAuth({
       overwrite: true,
     },
   },
+  baseURL: process.env.BASE_URL,
   basePath: "api/v1/better-auth",
 });

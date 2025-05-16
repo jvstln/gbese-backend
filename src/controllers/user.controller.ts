@@ -29,8 +29,6 @@ class UserController {
       req.body
     );
 
-    console.log(req.body);
-
     res.json({
       success: true,
       message: "User details updated successfully",
