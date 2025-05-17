@@ -34,7 +34,7 @@ class DebtRequestService {
       }
     } else {
       // Pick the first active loan of the user
-      const activeLoans = await loanService.getUsersActiveLoans(
+      const activeLoans = await loanService.getUserActiveLoans(
         currentUser.account._id
       );
 

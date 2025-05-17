@@ -3,15 +3,15 @@ import { TransactionCategories } from "./transaction.type";
 import { UserDocument } from "./user.type";
 
 export interface PeerTransfer {
-  fromAccountId: ObjectId;
-  toAccountId: ObjectId;
+  fromAccount: AccountDocument;
+  toAccount: AccountDocument;
   amount: string;
   description?: string;
   transactionCategory?: TransactionCategories;
 }
 
 export interface FundAccount {
-  accountId: ObjectId;
+  account: AccountDocument;
   amount: string;
   callbackUrl: string;
 }

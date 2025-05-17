@@ -53,12 +53,6 @@ class AccountController {
       req.params.accountId
     );
 
-    if (!account) {
-      throw new APIError("NOT_FOUND", {
-        message: "Account not found",
-      });
-    }
-
     res.json({
       success: true,
       message: "Account fetched successfully",

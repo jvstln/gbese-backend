@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import { accountModel } from "../model/account.model";
 import { AccountDocument } from "../types/account.type";
+import { APIError } from "better-auth/api";
 
 class AccountServices {
   async getAccount(filters: Record<string, unknown> = {}) {
@@ -28,21 +29,32 @@ class AccountServices {
     return account.save();
   }
 
-  async getMinimalUserAccount(accountId: string) {
+  getAccountByIdOrNumber(identifier: string) {
     const accountIdQuery: { [key: string]: string }[] = [
-      { accountNumber: accountId },
+      { accountNumber: identifier },
     ];
 
-    if (mongoose.Types.ObjectId.isValid(accountId)) {
-      accountIdQuery.push({ _id: accountId });
+    if (mongoose.Types.ObjectId.isValid(identifier)) {
+      accountIdQuery.push({ _id: identifier });
     }
 
-    return accountModel
-      .findOne(
-        { $or: accountIdQuery },
-        "accountNumber isActive createdAt userId"
-      )
+    const account = accountModel
+      .findOne({ $or: accountIdQuery })
       .populate("user");
+
+    if (!account) {
+      throw new APIError("NOT_FOUND", {
+        message: "Account not found",
+      });
+    }
+
+    return account;
+  }
+
+  async getMinimalUserAccount(identifier: string) {
+    return this.getAccountByIdOrNumber(identifier)
+      .select("accountNumber isActive createdAt userId")
+      .populate("user", "email name image emailVerified points");
   }
 }
 

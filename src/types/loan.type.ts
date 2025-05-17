@@ -36,7 +36,7 @@ export interface LoanModel extends mongoose.Model<Loan> {
 }
 
 export interface BorrowLoan {
-  accountId: ObjectId;
+  account: AccountDocument;
   amount: string;
   durationInDays: number;
   description?: string;
@@ -44,7 +44,7 @@ export interface BorrowLoan {
 
 export interface PayLoanUsingIds {
   loanId: ObjectId;
-  accountId: ObjectId;
+  account: AccountDocument;
   amount?: string;
 }
 

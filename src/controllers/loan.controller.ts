@@ -5,11 +5,11 @@ import mongoose from "mongoose";
 
 class LoanController {
   async borrowLoan(
-    req: Request<{}, {}, Omit<BorrowLoan, "accountId">>,
+    req: Request<{}, {}, Omit<BorrowLoan, "account">>,
     res: Response
   ) {
     const borrowedLoanData = await loanService.borrowLoan({
-      accountId: req.userSession!.user.account._id,
+      account: req.userSession!.account,
       ...req.body,
     });
 
@@ -22,7 +22,7 @@ class LoanController {
 
   async getUserLoans(req: Request, res: Response) {
     const userLoans = await loanService.getLoans({
-      accountId: req.userSession!.user.account._id.toString(),
+      accountId: req.userSession!.account._id.toString(),
     });
 
     res.json({
@@ -36,13 +36,13 @@ class LoanController {
     req: Request<
       { loanId: string },
       {},
-      Omit<PayLoanUsingIds, "loanId" | "accountId">
+      Omit<PayLoanUsingIds, "loanId" | "account">
     >,
     res: Response
   ) {
-    const loanPayment = await loanService.payLoanUsingIds({
+    const loanPayment = await loanService.payLoanUsingId({
       loanId: new mongoose.Types.ObjectId(req.params.loanId),
-      accountId: req.userSession!.user.account._id,
+      account: req.userSession!.account,
       ...req.body,
     });
 

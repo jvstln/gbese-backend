@@ -6,7 +6,7 @@ import {
   BorrowLoan,
   LoanStatuses,
   PayLoan,
-  PayLoanUsingIds,
+  PayLoanUsingIds as PayLoanUsingId,
 } from "../types/loan.type";
 import {
   TransactionCategories,
@@ -29,7 +29,7 @@ class LoanService {
     return loanModel.find(filters);
   }
 
-  getUsersActiveLoans(accountId: ObjectId) {
+  getUserActiveLoans(accountId: ObjectId) {
     return loanModel.find({
       accountId,
       status: {
@@ -39,7 +39,7 @@ class LoanService {
   }
 
   async getLoanStatistics(accountId: ObjectId) {
-    const activeLoans = await this.getUsersActiveLoans(accountId);
+    const activeLoans = await this.getUserActiveLoans(accountId);
     const totalAmountInDebt = activeLoans.reduce(
       (total, loan) => total.add(loan.totalAmountToBePaid),
       new Decimal(0)
@@ -51,21 +51,11 @@ class LoanService {
     };
   }
 
-  async borrowLoan({
-    accountId,
-    amount,
-    durationInDays,
-    description,
-  }: BorrowLoan) {
-    const dbTransaction = await mongoose.connection.transaction(async () => {
-      // Check that user has a wallet account
-      const account = await accountService.getAccount({ _id: accountId });
-      if (!account) {
-        throw new APIError("BAD_REQUEST", {
-          message: "User account not found.",
-        });
-      }
-
+  async borrowLoan(
+    { account, amount, durationInDays, description }: BorrowLoan,
+    useTransaction: boolean = true
+  ) {
+    const dbTransactionCallback = async () => {
       // Check for loan limits
       const limits = loanModel.getLoanLimit(account.user.points.toString());
       if (new Decimal(amount).gt(limits.amount)) {
@@ -82,8 +72,8 @@ class LoanService {
         });
       }
 
-      const activeLoanCount = await this.getUsersActiveLoans(
-        accountId
+      const activeLoanCount = await this.getUserActiveLoans(
+        account._id
       ).countDocuments();
       if (activeLoanCount >= limits.activeLoans) {
         throw new APIError("UNPROCESSABLE_ENTITY", {
@@ -110,7 +100,7 @@ class LoanService {
 
       // Create the loan record
       const loan = new loanModel({
-        accountId,
+        accountId: account._id,
         principal: amount,
         status: LoanStatuses.ACTIVE,
         durationInDays,
@@ -128,26 +118,23 @@ class LoanService {
       await loan.save();
 
       return { loan, transaction, account };
-    });
+    };
 
-    return dbTransaction;
+    if (useTransaction) {
+      return await mongoose.connection.transaction(dbTransactionCallback);
+    }
+
+    return dbTransactionCallback();
   }
 
-  async payLoanUsingIds(
-    { loanId, accountId, amount }: PayLoanUsingIds,
+  async payLoanUsingId(
+    { loanId, account, amount }: PayLoanUsingId,
     useTransaction?: boolean
   ) {
     const loan = await loanModel.findById(loanId);
     if (!loan) {
       throw new APIError("NOT_FOUND", {
         message: "Loan not found.",
-      });
-    }
-
-    const account = await accountService.getAccount({ _id: accountId });
-    if (!account) {
-      throw new APIError("BAD_REQUEST", {
-        message: "User account not found.",
       });
     }
 
