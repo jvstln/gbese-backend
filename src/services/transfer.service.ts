@@ -126,6 +126,12 @@ export class TransferService {
     { account, amount, callbackUrl }: FundAccount,
     useTransaction: boolean = true
   ) {
+    if (!account.isActive) {
+      throw new APIError("UNPROCESSABLE_ENTITY", {
+        message: "Account is disabled",
+      });
+    }
+
     const dbTransactionCallback = async () => {
       // Create a transaction history for the pending fund
       const transaction = transactionService.declare({
@@ -173,6 +179,12 @@ export class TransferService {
     }: Withdraw & { account: AccountDocument },
     useTransaction: boolean = true
   ) {
+    if (!account.isActive) {
+      throw new APIError("UNPROCESSABLE_ENTITY", {
+        message: "Account is disabled",
+      });
+    }
+
     const amountDecimal = new Decimal(amount!);
     if (amountDecimal.gt(account.balance as string)) {
       throw new APIError("UNPROCESSABLE_ENTITY", {

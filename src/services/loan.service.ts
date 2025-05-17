@@ -55,6 +55,12 @@ class LoanService {
     { account, amount, durationInDays, description }: BorrowLoan,
     useTransaction: boolean = true
   ) {
+    if (!account.isActive) {
+      throw new APIError("UNPROCESSABLE_ENTITY", {
+        message: "Account is disabled.",
+      });
+    }
+
     const dbTransactionCallback = async () => {
       // Check for loan limits
       const limits = loanModel.getLoanLimit(account.user.points.toString());
@@ -145,6 +151,12 @@ class LoanService {
     { loan, account, amount: defaultAmount }: PayLoan,
     useTransaction: boolean = true
   ) {
+    if (!account.isActive) {
+      throw new APIError("UNPROCESSABLE_ENTITY", {
+        message: "Account is disabled.",
+      });
+    }
+
     const transactionCallback = async () => {
       if (loan.status !== LoanStatuses.ACTIVE) {
         throw new APIError("UNPROCESSABLE_ENTITY", {
