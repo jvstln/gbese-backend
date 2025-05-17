@@ -37,12 +37,25 @@ class AuthMiddleware {
     next: NextFunction
   ) {
     if (!req.userSession || !req.userSession.user.emailVerified) {
-      throw new APIError("FORBIDDEN", { message: "User email not verified" });
+      throw new APIError("FORBIDDEN", {
+        message:
+          "User email not verified. Check your email for verificaton link",
+      });
     }
 
     if (!req.userSession.user.identityDocuments.length) {
       throw new APIError("UNPROCESSABLE_ENTITY", {
         message: "User needs to complete KYC verification",
+      });
+    }
+
+    next();
+  }
+
+  handleAccountVerification(req: Request, res: Response, next: NextFunction) {
+    if (!req.userSession!.account.isActive) {
+      throw new APIError("UNPROCESSABLE_ENTITY", {
+        message: "User account is disabled",
       });
     }
 

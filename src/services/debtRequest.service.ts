@@ -2,7 +2,9 @@ import { APIError } from "better-auth/api";
 import { debtRequestModel } from "../model/debtRequest.model";
 import {
   DebtRequestCreation,
+  DebtRequestDocument,
   DebtRequestStatuses,
+  DebtRequestVirtual,
 } from "../types/debtRequest.type";
 import { getDebtStatisticsPipeline } from "../pipelines/debtRequest.pipeline";
 import mongoose from "mongoose";
@@ -62,11 +64,17 @@ class DebtRequestService {
       loanId: loan._id,
     });
     await debtRequest.save();
-    return debtRequest.populate("debtor payer");
+    return debtRequest.populate<
+      DebtRequestVirtual<"loan" | "debtor" | "payer">
+    >("debtor payer loan");
   }
 
   async getDebtRequests(filters: Record<string, unknown> = {}) {
-    return debtRequestModel.find(filters).populate("debtor payer loan");
+    return debtRequestModel
+      .find(filters)
+      .populate<DebtRequestVirtual<"loan" | "debtor" | "payer">>(
+        "debtor payer loan"
+      );
   }
 
   async updateDebtRequest(
@@ -111,7 +119,9 @@ class DebtRequestService {
     debtRequest.set(updates);
 
     const updatedDebtRequest = await debtRequest.save();
-    return updatedDebtRequest.populate("debtor payer");
+    return updatedDebtRequest.populate<
+      DebtRequestVirtual<"loan" | "debtor" | "payer">
+    >("debtor payer loan");
   }
 
   /**
@@ -136,7 +146,9 @@ class DebtRequestService {
   }
 
   async payDebtRequest(id: string, currentUser: UserDocument) {
-    const debtRequest = await debtRequestModel.findById(id);
+    let debtRequest = await debtRequestModel
+      .findById(id)
+      .populate<DebtRequestVirtual<"loan">>("loan");
 
     if (!debtRequest) {
       throw new APIError("NOT_FOUND", {
@@ -168,12 +180,13 @@ class DebtRequestService {
         .add(debtRequest.debtPoint.toString())
         .toString();
 
-      await payer.save();
+      // payer should be saved in loanService.payLoan
+      // await payer.save();
 
       const loanPayment = await loanService.payLoan(
         {
-          loanId: debtRequest.loanId,
-          accountId: payer.account._id,
+          loan: debtRequest.loan,
+          account: payer.account,
           amount: debtRequest.amount.toString(),
         },
         false

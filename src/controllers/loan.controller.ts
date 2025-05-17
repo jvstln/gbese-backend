@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { loanService } from "../services/loan.service";
-import { BorrowLoan, PayLoan } from "../types/loan.type";
+import { BorrowLoan, PayLoanUsingIds } from "../types/loan.type";
 import mongoose from "mongoose";
 
 class LoanController {
@@ -33,10 +33,14 @@ class LoanController {
   }
 
   async payLoan(
-    req: Request<{ loanId: string }, {}, Omit<PayLoan, "loanId" | "accountId">>,
+    req: Request<
+      { loanId: string },
+      {},
+      Omit<PayLoanUsingIds, "loanId" | "accountId">
+    >,
     res: Response
   ) {
-    const loanPayment = await loanService.payLoan({
+    const loanPayment = await loanService.payLoanUsingIds({
       loanId: new mongoose.Types.ObjectId(req.params.loanId),
       accountId: req.userSession!.user.account._id,
       ...req.body,

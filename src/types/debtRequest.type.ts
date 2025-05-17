@@ -1,4 +1,6 @@
-import mongoose from "mongoose";
+import mongoose, { HydratedDocument } from "mongoose";
+import { UserDocument } from "./user.type";
+import { LoanDocument } from "./loan.type";
 
 export interface DebtRequestCreation {
   debtorId: ObjectId;
@@ -11,10 +13,19 @@ export interface DebtRequestCreation {
 export interface DebtRequest extends DebtRequestCreation {
   debtPoint: Decimal128;
   status: string;
-  createdAt: Date;
-  updatedAt: Date;
-  getDebtPoint(): Decimal128;
 }
+
+interface DebtRequestVirtualMap {
+  loan: LoanDocument;
+  debtor: UserDocument;
+  payer: UserDocument;
+}
+
+export type DebtRequestVirtual<T extends keyof DebtRequestVirtualMap> = {
+  [key in T]: DebtRequestVirtualMap[key];
+};
+
+export interface DebtRequestDocument extends HydratedDocument<DebtRequest> {}
 
 export enum DebtRequestStatuses {
   PENDING = "pending",

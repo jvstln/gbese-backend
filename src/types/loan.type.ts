@@ -1,4 +1,5 @@
-import mongoose from "mongoose";
+import mongoose, { HydratedDocument } from "mongoose";
+import { AccountDocument } from "./account.type";
 
 export enum LoanStatuses {
   PENDING = "pending",
@@ -21,6 +22,8 @@ export interface Loan {
   amountRemaining: string;
 }
 
+export type LoanDocument = HydratedDocument<Loan>;
+
 export interface LoanModel extends mongoose.Model<Loan> {
   getLoanLimit: (
     this: unknown,
@@ -39,9 +42,15 @@ export interface BorrowLoan {
   description?: string;
 }
 
-export interface PayLoan {
+export interface PayLoanUsingIds {
   loanId: ObjectId;
   accountId: ObjectId;
+  amount?: string;
+}
+
+export interface PayLoan {
+  loan: LoanDocument;
+  account: AccountDocument;
   amount?: string;
 }
 

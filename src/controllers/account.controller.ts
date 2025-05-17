@@ -7,37 +7,35 @@ import { APIError } from "better-auth/api";
 
 class AccountController {
   async getUserAccount(req: Request, res: Response) {
-    const userWallet = await accountService.getAccount({
-      userId: req.userSession!.user._id,
-    });
-
     res.json({
       success: true,
       message: "User account fetched successfully",
-      data: userWallet,
+      data: req.userSession!.account,
       number: generateAccountNumber(),
     });
   }
 
   async disableUserAccount(req: Request, res: Response) {
-    await accountService.disableAccount(
-      req.userSession!.user.account._id.toString()
+    const account = await accountService.disableAccount(
+      req.userSession!.account
     );
 
     res.json({
       success: true,
       message: "User account disabled successfully",
+      data: account,
     });
   }
 
   async enableUserAccount(req: Request, res: Response) {
-    await accountService.enableAccount(
-      req.userSession!.user.account._id.toString()
+    const account = await accountService.enableAccount(
+      req.userSession!.account
     );
 
     res.json({
       success: true,
       message: "User account enabled successfully",
+      data: account,
     });
   }
 

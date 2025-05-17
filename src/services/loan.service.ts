@@ -1,8 +1,13 @@
-import mongoose from "mongoose";
+import mongoose, { Document } from "mongoose";
 import { loanModel } from "../model/loan.model";
 import { APIError } from "better-auth/api";
 import Decimal from "decimal.js";
-import { BorrowLoan, LoanStatuses, PayLoan } from "../types/loan.type";
+import {
+  BorrowLoan,
+  LoanStatuses,
+  PayLoan,
+  PayLoanUsingIds,
+} from "../types/loan.type";
 import {
   TransactionCategories,
   TransactionStatuses,
@@ -128,36 +133,43 @@ class LoanService {
     return dbTransaction;
   }
 
+  async payLoanUsingIds(
+    { loanId, accountId, amount }: PayLoanUsingIds,
+    useTransaction?: boolean
+  ) {
+    const loan = await loanModel.findById(loanId);
+    if (!loan) {
+      throw new APIError("NOT_FOUND", {
+        message: "Loan not found.",
+      });
+    }
+
+    const account = await accountService.getAccount({ _id: accountId });
+    if (!account) {
+      throw new APIError("BAD_REQUEST", {
+        message: "User account not found.",
+      });
+    }
+
+    return this.payLoan({ loan, account, amount }, useTransaction);
+  }
+
   async payLoan(
-    { loanId, accountId, amount: defaultAmount }: PayLoan,
+    { loan, account, amount: defaultAmount }: PayLoan,
     useTransaction: boolean = true
   ) {
     const transactionCallback = async () => {
-      const loan = await loanModel.findById(loanId);
-      if (!loan) {
-        throw new APIError("NOT_FOUND", {
-          message: "Loan not found.",
-        });
-      }
-
       if (loan.status !== LoanStatuses.ACTIVE) {
         throw new APIError("UNPROCESSABLE_ENTITY", {
           message: "Loan is not active.",
         });
       }
 
-      // If amount is not specified, the amount becomes the total loan amount
+      // If amount is not specified or if amount is greater than the loan amount, the amount becomes the total loan amount
       const amount =
         !defaultAmount || new Decimal(defaultAmount).gt(loan.amountRemaining)
           ? loan.amountRemaining
           : defaultAmount;
-
-      const account = await accountService.getAccount({ _id: accountId });
-      if (!account) {
-        throw new APIError("BAD_REQUEST", {
-          message: "User account not found.",
-        });
-      }
 
       if (new Decimal(loan.totalAmountToBePaid).lt(amount)) {
         throw new APIError("UNPROCESSABLE_ENTITY", {
@@ -184,7 +196,7 @@ class LoanService {
       });
 
       const transaction = transactionService.declare({
-        accountId,
+        accountId: account._id,
         type: TransactionTypes.DEBIT,
         category: TransactionCategories.LOAN,
         balanceBefore,

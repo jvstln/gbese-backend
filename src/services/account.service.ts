@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { accountModel } from "../model/account.model";
+import { AccountDocument } from "../types/account.type";
 
 class AccountServices {
   async getAccount(filters: Record<string, unknown> = {}) {
@@ -17,16 +18,14 @@ class AccountServices {
     return accountModel.exists(filters);
   }
 
-  async disableAccount(accountId: string) {
-    return accountModel
-      .updateOne({ _id: accountId }, { isActive: false })
-      .populate("user");
+  async disableAccount(account: AccountDocument) {
+    account.isActive = false;
+    return account.save();
   }
 
-  async enableAccount(accountId: string) {
-    return accountModel
-      .updateOne({ _id: accountId }, { isActive: true })
-      .populate("user");
+  async enableAccount(account: AccountDocument) {
+    account.isActive = true;
+    return account.save();
   }
 
   async getMinimalUserAccount(accountId: string) {
@@ -43,7 +42,7 @@ class AccountServices {
         { $or: accountIdQuery },
         "accountNumber isActive createdAt userId"
       )
-      .populate({ path: "user", select: { name: 1, email: 1 } });
+      .populate("user");
   }
 }
 
