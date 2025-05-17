@@ -1,6 +1,5 @@
 import express from "express";
 import { userController } from "../controllers/user.controller";
-import { fileMiddleware } from "../middlewares/file.middleware";
 import { userUpdateSchema } from "../schemas/user.schema";
 import { validationMiddleware } from "../middlewares/validation.middleware";
 
@@ -11,7 +10,6 @@ userRouter.get("/me", userController.getUser);
 // Update user
 userRouter.patch(
   "/me",
-  fileMiddleware.fields([{ name: "identityDocument" }, { name: "image" }]),
   validationMiddleware.validate({ path: "body", schema: userUpdateSchema }),
   userController.updateUser
 );

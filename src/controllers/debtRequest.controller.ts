@@ -9,7 +9,10 @@ class DebtRequestController {
   async createDebtRequest(req: Request, res: Response) {
     req.body.debtorId = req.userSession!.user._id;
 
-    const debtTransfer = await debtRequestService.createDebtRequest(req.body);
+    const debtTransfer = await debtRequestService.createDebtRequest(
+      req.userSession!.user,
+      req.body
+    );
 
     res.status(201).json({
       success: true,
@@ -26,8 +29,7 @@ class DebtRequestController {
     const userId = req.userSession!.user._id;
     let filter: Record<string, unknown> = {};
 
-    if (role === DebtRequestUserRoles.CREDITOR) filter.creditorId = userId;
-    else if (role === DebtRequestUserRoles.DEBTOR) filter.debtorId = userId;
+    if (role === DebtRequestUserRoles.DEBTOR) filter.debtorId = userId;
     else if (role === DebtRequestUserRoles.PAYER) filter.payerId = userId;
     else {
       filter = {
@@ -64,7 +66,8 @@ class DebtRequestController {
 
     const updatedDebtTransfer = await debtRequestService.updateDebtRequest(
       debtRequestId,
-      updates
+      updates,
+      req.userSession!.user
     );
     res.status(200).json({
       success: true,
@@ -75,7 +78,6 @@ class DebtRequestController {
 
   async payDebtRequest(req: Request, res: Response) {
     const { debtRequestId } = req.params;
-    const updates = req.body;
 
     const payedDebtRequest = await debtRequestService.payDebtRequest(
       debtRequestId,
@@ -86,6 +88,17 @@ class DebtRequestController {
       success: true,
       message: "Debt request paid successfully",
       data: payedDebtRequest,
+    });
+  }
+
+  async getShuffledDebtRequests(req: Request, res: Response) {
+    const shuffledDebtRequests =
+      await debtRequestService.getShuffledDebtRequests(req.userSession!.user);
+
+    res.status(200).json({
+      success: true,
+      message: "Shuffled debt requests fetched successfully",
+      data: shuffledDebtRequests,
     });
   }
 }

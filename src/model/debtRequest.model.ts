@@ -1,10 +1,10 @@
 import { Schema, model } from "mongoose";
-import { DebtRequestStatuses, IDebtRequest } from "../types/debtRequest.type";
+import { DebtRequestStatuses, DebtRequest } from "../types/debtRequest.type";
 import Decimal from "decimal.js";
 import { userModel } from "./user.model";
 import { APIError } from "better-auth/api";
 
-const DebtRequestSchema = new Schema<IDebtRequest>(
+const debtRequestSchema = new Schema<DebtRequest>(
   {
     debtorId: {
       type: Schema.Types.ObjectId,
@@ -12,17 +12,14 @@ const DebtRequestSchema = new Schema<IDebtRequest>(
       required: [true, "Debtor ID is required"],
       validate: userModel.validateUserExistence.bind(userModel),
     },
-    creditorId: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-      required: [true, "Creditor ID is required"],
-      validate: userModel.validateUserExistence.bind(userModel),
-    },
     payerId: {
       type: Schema.Types.ObjectId,
       ref: "User",
-      required: [true, "Payer ID is required"],
       validate: userModel.validateUserExistence.bind(userModel),
+    },
+    loanId: {
+      type: Schema.Types.ObjectId,
+      ref: "Loan",
     },
     amount: {
       type: Schema.Types.Decimal128,
@@ -46,7 +43,6 @@ const DebtRequestSchema = new Schema<IDebtRequest>(
   },
   {
     timestamps: true,
-    versionKey: false,
     methods: {
       getDebtPoint: function () {
         /**
@@ -62,52 +58,43 @@ const DebtRequestSchema = new Schema<IDebtRequest>(
   }
 );
 
-DebtRequestSchema.pre("save", function (next) {
+debtRequestSchema.pre("save", function (next) {
   if (this.isModified("amount")) {
     this.debtPoint = this.getDebtPoint();
   }
 
-  // ensure that the creditor, the debtor and the payer are not the same
-  if (
-    this.debtorId.toString() === this.creditorId.toString() ||
-    this.debtorId.toString() === this.payerId.toString()
-  ) {
+  // ensure that the debtor and the payer are not the same
+  if (this.debtorId.toString() === this.payerId?.toString()) {
     throw new APIError("UNPROCESSABLE_ENTITY", {
-      message: "You (Debtor) cannot be the same as creditor or payer",
-    });
-  }
-
-  if (this.creditorId.toString() === this.payerId.toString()) {
-    throw new APIError("UNPROCESSABLE_ENTITY", {
-      message: "Creditor cannot be the same as payer",
+      message: "You (Debtor) cannot be the same as the payer",
     });
   }
 
   next();
 });
 
-DebtRequestSchema.virtual("debtor", {
+debtRequestSchema.virtual("debtor", {
   ref: "User",
   localField: "debtorId",
   foreignField: "_id",
   justOne: true,
 });
 
-DebtRequestSchema.virtual("creditor", {
-  ref: "User",
-  localField: "creditorId",
-  foreignField: "_id",
-  justOne: true,
-});
-
-DebtRequestSchema.virtual("payer", {
+debtRequestSchema.virtual("payer", {
   ref: "User",
   localField: "payerId",
   foreignField: "_id",
   justOne: true,
 });
 
-export const DebtRequest = model<IDebtRequest>(
+debtRequestSchema.virtual("loan", {
+  ref: "Loan",
+  localField: "loanId",
+  foreignField: "_id",
+  justOne: true,
+});
+
+export const debtRequestModel = model<DebtRequest>(
   "DebtRequest",
-  DebtRequestSchema
+  debtRequestSchema
 );

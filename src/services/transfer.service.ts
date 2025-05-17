@@ -7,11 +7,11 @@ import {
   TransactionStatuses,
   TransactionTypes,
 } from "../types/transaction.type";
-import { transactionModel } from "../model/transaction.model";
 import { paystackService } from "./paystack.service";
 import { PaystackMetadataAction } from "../types/paystack.type";
 import { accountService } from "./account.service";
 import { transferRecipientService } from "./transferRecipient.service";
+import { transactionService } from "./transaction.service";
 
 export class TransferService {
   async peerTransfer({
@@ -40,7 +40,7 @@ export class TransferService {
         });
       }
 
-      if (fromAccountId === toAccountId) {
+      if (fromAccountId.toString() === toAccountId.toString()) {
         throw new APIError("BAD_REQUEST", {
           message: "Sender and receiver accounts cannot be the same",
         });
@@ -68,7 +68,7 @@ export class TransferService {
       };
 
       // Create transaction histories for the transfer
-      const transactionFrom = new transactionModel({
+      const transactionFrom = transactionService.declare({
         accountId: fromAccountId,
         type: TransactionTypes.DEBIT,
         category: transactionCategory,
@@ -78,16 +78,16 @@ export class TransferService {
         metadata,
       });
 
-      const transactionTo = new transactionModel({
+      const transactionTo = transactionService.declare({
         accountId: toAccountId,
         type: TransactionTypes.CREDIT,
         category: transactionCategory,
         balanceBefore: toAccount.balance,
         description,
         status: TransactionStatuses.PENDING,
-        reference: transactionFrom.reference,
         metadata,
       });
+      transactionTo.reference = transactionFrom.reference;
 
       // Update sender account balance
       fromAccount.balance = new Decimal(fromAccount.balance.toString())
@@ -127,12 +127,14 @@ export class TransferService {
     }
 
     const dbTransaction = await mongoose.connection.transaction(async () => {
-      const transaction = new transactionModel({
+      const transaction = transactionService.declare({
         accountId,
         type: TransactionTypes.CREDIT,
         category: TransactionCategories.FUND,
         balanceBefore: account.balance,
-        balanceAfter: new Decimal(account.balance.toString()).add(amount),
+        balanceAfter: new Decimal(account.balance.toString())
+          .add(amount)
+          .toString(),
         status: TransactionStatuses.PENDING,
       });
 
@@ -191,12 +193,11 @@ export class TransferService {
         });
 
       // Create transaction history
-      const transaction = new transactionModel({
+      const transaction = transactionService.declare({
         accountId,
         type: TransactionTypes.DEBIT,
         category: TransactionCategories.WITHDRAWAL,
         balanceBefore: account.balance,
-        balanceAfter: new Decimal(account.balance.toString()).sub(amount!),
         status: TransactionStatuses.SUCCESS,
         description,
         metadata: {
@@ -208,7 +209,6 @@ export class TransferService {
           recipientCode: transferRecipient.recipient_code,
         },
       });
-      await transaction.save();
 
       /**
        * The Below commented code is meant to initiiate a transfer from paystack and then for
@@ -226,6 +226,9 @@ export class TransferService {
         .sub(amount!)
         .toString();
       await account.save();
+
+      transaction.balanceAfter = account.balance;
+      await transaction.save();
 
       return transaction;
     });

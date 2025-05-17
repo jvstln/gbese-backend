@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { debtRequestController } from "../controllers/debtRequest.controller";
 import { validationMiddleware } from "../middlewares/validation.middleware";
-import { DebtRequest } from "../model/debtRequest.model";
+import { debtRequestModel } from "../model/debtRequest.model";
 import {
   debtRequestCreationSchema,
   debtRequestFiltersSchema,
@@ -30,10 +30,15 @@ debtRequestRouter.get(
 );
 debtRequestRouter.get("/all", debtRequestController.getAllDebtRequests);
 
+debtRequestRouter.get(
+  "/shuffle",
+  debtRequestController.getShuffledDebtRequests
+);
+
 debtRequestRouter.patch(
   "/:debtRequestId",
   validationMiddleware.validate([
-    { path: "params.debtRequestId", model: DebtRequest },
+    { path: "params.debtRequestId", model: debtRequestModel },
     { path: "body", schema: debtRequestUpdateSchema },
   ]),
   authMiddleware.handleUserVerification,

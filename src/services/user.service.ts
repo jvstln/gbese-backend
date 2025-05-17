@@ -1,5 +1,4 @@
 import { userModel } from "../model/user.model";
-import { getDocument, uploadDocument } from "../utils/cloudinary";
 import { UserUpdate } from "../types/user.type";
 import { APIError } from "better-auth/api";
 
@@ -12,12 +11,9 @@ class UserService {
     return userModel.find(filters).populate("account").exec();
   }
 
-  async updateUser(
-    id: string,
-    data: UserUpdate & { identityDocument: Express.Multer.File }
-  ) {
+  async updateUser(id: string, data: UserUpdate) {
     const {
-      identityDocument,
+      identityDocuments,
       identityDocumentType,
       phone,
       image,
@@ -33,36 +29,12 @@ class UserService {
       throw new APIError("UNAUTHORIZED", { message: "User not found" });
     }
 
-    // upload profile image
-    if (data.image && typeof image !== "string") {
-      const currentImage = await getDocument(user.image);
+    // upload profile image. Image should be uploaded to cloudinary from frontend
+    if (image) user.image = image;
 
-      const uploadedDocument = await uploadDocument({
-        path: image.path,
-        filename: image.originalname,
-        tags: [identityDocumentType, "profile-image"],
-        folder: `${user.email}`,
-        public_id: currentImage?.public_id,
-        overwrite: true,
-      });
-
-      user.image = uploadedDocument.secure_url;
-    }
-
-    // upload identityDocument
-    if (data.identityDocument) {
-      const currentDocument = await getDocument(user.identityDocumentUrl);
-
-      const uploadedDocument = await uploadDocument({
-        path: identityDocument.path,
-        filename: identityDocument.originalname,
-        tags: [identityDocumentType, "kyc"],
-        folder: `${user.email}`,
-        public_id: currentDocument?.public_id,
-        overwrite: true,
-      });
-
-      user.identityDocumentUrl = uploadedDocument.secure_url;
+    // upload identityDocument. Image should be uploaded to cloudinary from frontend
+    if (identityDocuments) {
+      user.identityDocuments = identityDocuments;
       user.identityDocumentType = identityDocumentType;
     }
 

@@ -1,15 +1,14 @@
 import mongoose from "mongoose";
-import { Request } from "express";
 
 export interface DebtRequestCreation {
   debtorId: mongoose.Types.ObjectId;
-  creditorId: mongoose.Types.ObjectId;
-  payerId: mongoose.Types.ObjectId;
-  amount: mongoose.Types.Decimal128;
+  loanId: mongoose.Types.ObjectId;
+  payerId?: mongoose.Types.ObjectId;
+  amount: mongoose.Types.Decimal128 | string;
   description?: string;
 }
 
-export interface IDebtRequest extends DebtRequestCreation {
+export interface DebtRequest extends DebtRequestCreation {
   debtPoint: mongoose.Types.Decimal128;
   status: string;
   createdAt: Date;
@@ -25,7 +24,6 @@ export enum DebtRequestStatuses {
 
 export enum DebtRequestUserRoles {
   DEBTOR = "debtor",
-  CREDITOR = "creditor",
   PAYER = "payer",
 }
 

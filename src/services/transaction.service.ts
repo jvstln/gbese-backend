@@ -1,9 +1,20 @@
 import mongoose from "mongoose";
 import { transactionModel } from "../model/transaction.model";
-import { TransactionFilters } from "../types/transaction.type";
+import {
+  TransactionCreation,
+  TransactionFilters,
+} from "../types/transaction.type";
 import { formatPaginatedDocs } from "../utils/utils";
 
 class TransactionService {
+  async getTransaction(filter: Record<string, unknown>) {
+    return transactionModel.findOne(filter);
+  }
+
+  declare(data: Partial<TransactionCreation>) {
+    return new transactionModel(data);
+  }
+
   async getUserTransactions(userId: string, filters: TransactionFilters) {
     const matchStage: Record<string, unknown> = {
       "account.userId": new mongoose.Types.ObjectId(userId),

@@ -1,24 +1,29 @@
 import mongoose from "mongoose";
 import { IAccount } from "./account.type";
 
-export const identityDocumentTypes = ["nin", "passport", "bvn"] as const;
+export enum IdentityDocumentTypes {
+  NIN = "nin",
+  PASSPORT = "passport",
+  BVN = "bvn",
+  DRIVERS_LICENSE = "drivers_license",
+}
 
 export interface UserUpdate {
   firstName: string;
   lastName: string;
   phone: string;
   address: Address;
-  image: string | Express.Multer.File;
+  image: string;
   dateOfBirth: Date;
-  identityDocumentUrl: string;
-  identityDocumentType: typeof identityDocumentTypes;
+  identityDocuments: string[];
+  identityDocumentType: IdentityDocumentTypes;
 }
 
 export interface User extends UserUpdate {
   _id: string;
   name: string;
   email: string;
-  points: mongoose.Types.Decimal128;
+  points: mongoose.Types.Decimal128 | string;
   account: IAccount;
   image: string;
   emailVerified: boolean;
@@ -33,12 +38,4 @@ export interface Address {
   street: string;
   town: string;
   state: string;
-}
-
-export interface KycDocumentUpload {
-  email: string;
-  path: string;
-  kycDocumentType: typeof identityDocumentTypes;
-  filename: string;
-  publicId?: string;
 }

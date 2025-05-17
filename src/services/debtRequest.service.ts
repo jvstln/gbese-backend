@@ -1,28 +1,83 @@
 import { APIError } from "better-auth/api";
-import { DebtRequest } from "../model/debtRequest.model";
+import { debtRequestModel } from "../model/debtRequest.model";
 import {
   DebtRequestCreation,
   DebtRequestStatuses,
 } from "../types/debtRequest.type";
 import { getDebtStatisticsPipeline } from "../pipelines/debtRequest.pipeline";
 import mongoose from "mongoose";
-import { transferService } from "./transfer.service";
 import { userService } from "./user.service";
 import { User } from "../types/user.type";
-import { TransactionCategories } from "../types/transaction.type";
+import { loanService } from "./loan.service";
+import Decimal from "decimal.js";
 
 class DebtRequestService {
-  async createDebtRequest(data: DebtRequestCreation) {
-    const debtRequest = await DebtRequest.create(data);
-    return debtRequest;
+  async createDebtRequest(currentUser: User, data: DebtRequestCreation) {
+    let loan;
+
+    // Get the loan associated to the debt request
+    if (data.loanId) {
+      loan = await loanService.getLoan({
+        _id: data.loanId,
+        accountId: currentUser.account._id,
+      });
+
+      if (!loan) {
+        throw new APIError("UNPROCESSABLE_ENTITY", {
+          message: "User has no loan with the specified ID",
+        });
+      }
+    } else {
+      // Pick the first active loan of the user
+      const activeLoans = await loanService.getUsersActiveLoans(
+        currentUser.account._id
+      );
+
+      if (activeLoans.length === 0) {
+        throw new APIError("UNPROCESSABLE_ENTITY", {
+          message: "User is currently not in debt.",
+        });
+      }
+      loan = activeLoans[0];
+    }
+
+    // If no amount is specified, The amount becomes the remaining loan amount to be paid
+    if (!data.amount) {
+      data.amount = loan.amountRemaining;
+    }
+
+    const debtRequest = new debtRequestModel({
+      ...data,
+      loanId: loan._id,
+    });
+    await debtRequest.save();
+    return debtRequest.populate("debtor payer");
   }
 
   async getDebtRequests(filters: Record<string, unknown> = {}) {
-    return DebtRequest.find(filters).populate("debtor creditor payer");
+    return debtRequestModel.find(filters).populate("debtor payer loan");
   }
 
-  async updateDebtRequest(id: string, updates: Partial<DebtRequestCreation>) {
-    const debtRequest = await DebtRequest.findById(id);
+  async updateDebtRequest(
+    id: string,
+    updates: Partial<DebtRequestCreation>,
+    user: User
+  ) {
+    // Get the loan associated to the debt request
+    if (updates.loanId) {
+      const loan = await loanService.exists({
+        _id: updates.loanId,
+        accountId: user.account._id,
+      });
+
+      if (!loan) {
+        throw new APIError("UNPROCESSABLE_ENTITY", {
+          message: "User has no loan with the specified ID",
+        });
+      }
+    }
+
+    const debtRequest = await debtRequestModel.findById(id);
 
     if (!debtRequest) {
       throw new APIError("NOT_FOUND", {
@@ -33,18 +88,32 @@ class DebtRequestService {
     debtRequest.set(updates);
 
     const updatedDebtRequest = await debtRequest.save();
-    return updatedDebtRequest.populate("debtor creditor payer");
+    return updatedDebtRequest.populate("debtor payer");
+  }
+
+  /**
+   * Gets all debt request a user can pay/clear
+   */
+  async getShuffledDebtRequests(user: User) {
+    const debtRequests = await this.getDebtRequests({
+      payerId: { $in: [user._id, null] },
+      debtorId: { $ne: user._id },
+      status: DebtRequestStatuses.PENDING,
+      amount: { $lte: user.account.balance },
+    });
+
+    return debtRequests;
   }
 
   async getDebtStatistics(userId: string) {
-    const debtRequestStats = await DebtRequest.aggregate(
-      getDebtStatisticsPipeline(userId)
-    ).exec();
+    const debtRequestStats = await debtRequestModel
+      .aggregate(getDebtStatisticsPipeline(userId))
+      .exec();
     return debtRequestStats[0];
   }
 
   async payDebtRequest(id: string, currentUser: User) {
-    const debtRequest = await DebtRequest.findById(id);
+    const debtRequest = await debtRequestModel.findById(id);
 
     if (!debtRequest) {
       throw new APIError("NOT_FOUND", {
@@ -58,37 +127,39 @@ class DebtRequestService {
       });
     }
 
-    const creditor = await userService.getUser({ _id: debtRequest.creditorId });
-    const payer = await userService.getUser({ _id: debtRequest.payerId });
+    const payer = await userService.getUser({
+      _id: debtRequest.payerId ?? currentUser._id,
+    });
 
-    if (!creditor) {
-      throw new APIError("UNPROCESSABLE_ENTITY", {
-        message:
-          "Creditor not found. The person receiving the payment must be a registered user on the platform",
-      });
-    }
-
-    const isPayerTheCurrentUser =
-      payer && payer._id.toString() === currentUser._id.toString();
-    if (!isPayerTheCurrentUser) {
+    // Check whether the payer is eligible to pay this debt request.
+    // A payer is eligible if he is explicitly stated as the payer or if the payer is not specified
+    if (!payer || payer._id.toString() !== currentUser._id.toString()) {
       throw new APIError("UNPROCESSABLE_ENTITY", {
         message: "You are not meant to pay this debt.",
       });
     }
 
     const payedDebtRequest = await mongoose.connection.transaction(async () => {
-      const transfer = await transferService.peerTransfer({
-        fromAccountId: payer.account._id.toString(),
-        toAccountId: creditor.account._id.toString(),
-        amount: debtRequest.amount.toString(),
-        description: debtRequest.description,
-        transactionCategory: TransactionCategories.DEBT_TRANSFER,
-      });
+      // Add points for clearing a debt to user
+      payer.points = new Decimal(payer.points.toString())
+        .add(debtRequest.debtPoint.toString())
+        .toString();
+
+      await payer.save();
+
+      const loanPayment = await loanService.payLoan(
+        {
+          loanId: debtRequest.loanId.toString(),
+          accountId: payer.account._id.toString(),
+          amount: debtRequest.amount.toString(),
+        },
+        false
+      );
 
       debtRequest.status = DebtRequestStatuses.ACCEPTED;
       await debtRequest.save();
 
-      return transfer;
+      return loanPayment;
     });
 
     return payedDebtRequest;

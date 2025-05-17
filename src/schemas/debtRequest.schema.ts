@@ -3,12 +3,13 @@ import {
   DebtRequestStatuses,
   DebtRequestUserRoles,
 } from "../types/debtRequest.type";
+import { amountSchema } from "./transfer.schema";
 
 const debtRequestPayload = {
-  creditorId: Joi.string().required(),
-  payerId: Joi.string().required(),
-  amount: Joi.number().required(),
+  payerId: Joi.string(),
+  amount: amountSchema,
   description: Joi.string(),
+  loanId: Joi.string(),
 };
 
 export const debtRequestCreationSchema = Joi.object(debtRequestPayload);

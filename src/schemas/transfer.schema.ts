@@ -1,7 +1,7 @@
 import Joi from "joi";
 import Decimal from "decimal.js";
 
-const amountSchema = Joi.alternatives().conditional(Joi.string(), {
+export const amountSchema = Joi.alternatives().conditional(Joi.string(), {
   then: Joi.string()
     .custom((value, helpers) => {
       if (isNaN(Number(value))) {
@@ -34,6 +34,9 @@ export const fundAccountSchema = Joi.object({
 
 export const withdrawSchema = Joi.object({
   amount: amountSchema.required(),
-  accountNumber: Joi.string().required(),
-  bankCode: Joi.string().required(),
+  accountNumber: [
+    Joi.string().required(),
+    Joi.number().required().cast("string"),
+  ],
+  bankCode: [Joi.string().required(), Joi.number().required().cast("string")],
 });

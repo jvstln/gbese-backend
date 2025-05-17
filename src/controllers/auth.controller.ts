@@ -7,6 +7,7 @@ import { handleRawResponse } from "../utils/utils";
 import { StatusCodes } from "../types/api.type";
 import { accountService } from "../services/account.service";
 import { userModel } from "../model/user.model";
+import { userService } from "../services/user.service";
 
 class AuthController {
   async register(req: Request, res: Response) {
@@ -25,9 +26,13 @@ class AuthController {
 
     const responseBody = await handleRawResponse(res, loginResponse);
 
+    const completeUserDetails = await userService.getUser({
+      _id: responseBody.user.id,
+    });
+
     res.status(loginResponse.status).json({
       message: "User logged in successfully",
-      data: responseBody.user,
+      data: completeUserDetails,
     });
   }
 

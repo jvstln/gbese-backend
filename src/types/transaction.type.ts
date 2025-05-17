@@ -16,19 +16,24 @@ export enum TransactionCategories {
   DEBT_TRANSFER = "debt_transfer",
   FUND = "fund",
   WITHDRAWAL = "withdrawal",
+  LOAN = "loan",
+  DEBT_REPAYMENT = "debt_repayment",
+  WEB3_WITHDRAWAL = "web3_withdrawal",
 }
 
-export interface ITransaction {
-  accountId: mongoose.Types.ObjectId;
-  userId: mongoose.Types.ObjectId;
+export interface TransactionCreation {
+  accountId: mongoose.Types.ObjectId | string;
   type: TransactionTypes;
   category: TransactionCategories;
   amount: mongoose.Types.Decimal128 | string;
   balanceBefore: mongoose.Types.Decimal128 | string;
   balanceAfter: mongoose.Types.Decimal128 | string;
-  description: string;
-  status: TransactionStatuses;
-  metadata: object;
+  description?: string;
+  status?: TransactionStatuses;
+  metadata?: object;
+}
+
+export interface ITransaction extends TransactionCreation {
   reference: string;
 }
 

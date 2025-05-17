@@ -6,6 +6,7 @@ import { authMiddleware } from "../middlewares/auth.middleware";
 import { accountRouter } from "./account.route";
 import transactionRouter from "./transaction.route";
 import paystackRouter from "./paystack.route";
+import { web3Router } from "./web3.route";
 
 export const indexRouter = Router();
 
@@ -15,7 +16,7 @@ indexRouter.get("", (req, res) => {
 
 // For all authenticated routes
 indexRouter.use(
-  ["/users", "/debt-requests", "/accounts", "/transactions"],
+  ["/users", "/debt-requests", "/accounts", "/transactions", "/web3"],
   authMiddleware.handleSession
 );
 
@@ -30,3 +31,5 @@ indexRouter.use("/accounts", accountRouter);
 indexRouter.use("/transactions", transactionRouter);
 
 indexRouter.use("/paystack", paystackRouter);
+
+indexRouter.use("/web3", web3Router);
