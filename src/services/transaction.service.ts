@@ -5,6 +5,7 @@ import {
   TransactionFilters,
 } from "../types/transaction.type";
 import { formatPaginatedDocs } from "../utils/utils";
+import { APIError } from "better-auth/api";
 
 class TransactionService {
   async getTransaction(filter: Record<string, unknown>) {
@@ -15,7 +16,7 @@ class TransactionService {
     return new transactionModel(data);
   }
 
-  async getUserTransactions(userId: string, filters: TransactionFilters) {
+  async getUserTransactions(userId: ObjectId, filters: TransactionFilters) {
     const matchStage: Record<string, unknown> = {
       "account.userId": new mongoose.Types.ObjectId(userId),
     };
@@ -73,8 +74,25 @@ class TransactionService {
     return formatPaginatedDocs(paginationResult);
   }
 
-  async getUserTransactionByReference(accountId: string, reference: string) {
-    return transactionModel.findOne({ reference, accountId });
+  async getUserTransactionByReference(accountId: ObjectId, reference: string) {
+    const transaction = await transactionModel.findOne({
+      accountId,
+      reference,
+    });
+
+    if (!transaction) {
+      throw new APIError("NOT_FOUND", {
+        message: "Transaction not found",
+      });
+    }
+
+    if (transaction.accountId.toString() === accountId.toString()) {
+      throw new APIError("UNAUTHORIZED", {
+        message: "You are not authorized to view this transaction",
+      });
+    }
+
+    return transaction;
   }
 }
 

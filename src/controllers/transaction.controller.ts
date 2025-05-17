@@ -9,7 +9,7 @@ class TransactionController {
     res: Response
   ) {
     const transactions = await transactionService.getUserTransactions(
-      req.userSession!.user._id.toString(),
+      req.userSession!.user._id,
       req.query
     );
 
@@ -25,21 +25,9 @@ class TransactionController {
     res: Response
   ) {
     const transaction = await transactionService.getUserTransactionByReference(
-      req.userSession!.user.account._id.toString(),
+      req.userSession!.account._id,
       req.params.reference
     );
-
-    if (!transaction) {
-      throw new APIError("NOT_FOUND", {
-        message: "Transaction not found",
-      });
-    }
-
-    if (transaction.accountId === req.userSession?.user.account._id) {
-      throw new APIError("UNAUTHORIZED", {
-        message: "You are not authorized to view this transaction",
-      });
-    }
 
     res.json({
       success: true,
