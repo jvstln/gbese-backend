@@ -40,6 +40,12 @@ class AuthMiddleware {
       throw new APIError("FORBIDDEN", { message: "User email not verified" });
     }
 
+    if (!req.userSession.user.identityDocuments.length) {
+      throw new APIError("UNPROCESSABLE_ENTITY", {
+        message: "User needs to complete KYC verification",
+      });
+    }
+
     next();
   }
 }

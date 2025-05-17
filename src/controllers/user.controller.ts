@@ -9,7 +9,7 @@ class UserController {
       req.userSession!.user._id
     );
     const loanStats = await loanService.getLoanStatistics(
-      req.userSession!.user.account._id
+      req.userSession!.account._id
     );
 
     res.json({
@@ -24,10 +24,7 @@ class UserController {
   }
 
   async updateUser(req: Request, res: Response) {
-    const user = await userService.updateUser(
-      req.userSession!.user._id,
-      req.body
-    );
+    const user = await userService.updateUser(req.userSession!.user, req.body);
 
     res.json({
       success: true,

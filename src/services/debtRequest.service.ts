@@ -49,6 +49,14 @@ class DebtRequestService {
       data.amount = loan.amountRemaining;
     }
 
+    if (
+      new Decimal(data.amount.toString()).gt(new Decimal(loan.amountRemaining))
+    ) {
+      throw new APIError("UNPROCESSABLE_ENTITY", {
+        message: "Amount to be paid cannot be greater than amount in debt",
+      });
+    }
+
     const debtRequest = new debtRequestModel({
       ...data,
       loanId: loan._id,
@@ -67,8 +75,18 @@ class DebtRequestService {
     user: UserDocument
   ) {
     // Get the loan associated to the debt request
+    const debtRequest = await debtRequestModel.findById(id);
+
+    if (!debtRequest) {
+      throw new APIError("NOT_FOUND", {
+        message: "Debt request not found",
+      });
+    }
+
+    updates.amount = updates.amount ?? debtRequest.amount;
+
     if (updates.loanId) {
-      const loan = await loanService.exists({
+      const loan = await loanService.getLoan({
         _id: updates.loanId,
         accountId: user.account._id,
       });
@@ -78,14 +96,16 @@ class DebtRequestService {
           message: "User has no loan with the specified ID",
         });
       }
-    }
 
-    const debtRequest = await debtRequestModel.findById(id);
-
-    if (!debtRequest) {
-      throw new APIError("NOT_FOUND", {
-        message: "Debt request not found",
-      });
+      if (
+        new Decimal(updates.amount.toString()).gt(
+          new Decimal(loan.amountRemaining)
+        )
+      ) {
+        throw new APIError("UNPROCESSABLE_ENTITY", {
+          message: "Amount to be paid cannot be greater than amount in debt",
+        });
+      }
     }
 
     debtRequest.set(updates);

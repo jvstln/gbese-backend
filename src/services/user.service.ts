@@ -11,7 +11,7 @@ class UserService {
     return userModel.find(filters).populate("account").exec();
   }
 
-  async updateUser(id: ObjectId, data: UserUpdate) {
+  async updateUser(user: UserDocument, data: UserUpdate) {
     const {
       identityDocuments,
       identityDocumentType,
@@ -22,12 +22,6 @@ class UserService {
       lastName,
       dateOfBirth,
     } = data;
-
-    const user = await userModel.findById(id).populate("account").exec();
-
-    if (!user) {
-      throw new APIError("UNAUTHORIZED", { message: "User not found" });
-    }
 
     // upload profile image. Image should be uploaded to cloudinary from frontend
     if (image) user.image = image;
