@@ -1,96 +1,139 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Email Verified Successful</title>
+    <title>Email Verified - GBESE</title>
     <style>
-      * {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
+      :root {
+        --primary: #05238c;
+        --text-light: #f4f4f4;
+        --text-dark: #222;
+        --bg-light: #ffffff;
+        --bg-dark: #0b0c10;
+        --success-color: #2ecc71;
+        --font-family: "Segoe UI", sans-serif;
+      }
+
+      html[data-theme="dark"] {
+        --bg-light: var(--bg-dark);
+        --text-dark: var(--text-light);
       }
 
       body {
-        font-family: "Arial", sans-serif;
-        background-color: #f0f4f8;
+        margin: 0;
+        padding: 0;
+        font-family: var(--font-family);
+        background-color: var(--bg-light);
+        color: var(--text-dark);
         display: flex;
-        justify-content: center;
         align-items: center;
+        justify-content: center;
         height: 100vh;
-        color: #333;
+        transition: background 0.3s ease, color 0.3s ease;
       }
 
       .container {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        padding: 20px;
-      }
-
-      .verification-card {
-        background-color: #ffffff;
-        border-radius: 12px;
-        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
-        padding: 40px;
         text-align: center;
-        width: 350px;
-        transition: transform 0.3s;
-      }
-
-      .verification-card:hover {
-        transform: translateY(-5px);
+        max-width: 500px;
+        background: var(--bg-light);
+        padding: 40px;
+        border-radius: 12px;
+        box-shadow: 0 5px 25px rgba(0, 0, 0, 0.1);
+        transition: background 0.3s ease;
       }
 
       h1 {
-        color: #0735d2;
-        margin-bottom: 20px;
-        font-size: 24px;
-        font-weight: bold;
+        font-size: 2rem;
+        margin-bottom: 0.5em;
+        color: var(--success-color);
       }
 
       p {
-        color: #555;
-        margin-bottom: 30px;
-        font-size: 16px;
-        line-height: 1.5;
+        font-size: 1rem;
+        margin-bottom: 1em;
       }
 
       .btn {
+        padding: 12px 24px;
+        margin: 0.3rem 0;
         display: inline-block;
-        background-color: #0735d2;
+        background-color: var(--primary);
         color: white;
-        padding: 12px 25px;
         text-decoration: none;
-        border-radius: 5px;
-        font-size: 16px;
-        transition: background-color 0.3s, transform 0.3s;
-        box-shadow: 0 4px 15px rgba(7, 53, 210, 0.2);
+        border: none;
+        border-radius: 6px;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
       }
 
       .btn:hover {
-        background-color: #0628a1;
-        transform: translateY(-2px);
+        background-color: #03186a;
       }
 
-      .icon {
-        font-size: 50px;
-        color: #0735d2;
-        margin-bottom: 20px;
+      .countdown {
+        margin-top: 1rem;
+        font-size: 0.95rem;
+        color: gray;
+      }
+
+      .theme-toggle {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        background: none;
+        border: 1px solid var(--primary);
+        padding: 0.5em 1em;
+        border-radius: 6px;
+        color: var(--primary);
+        cursor: pointer;
+        font-size: 0.9rem;
+      }
+
+      @media (max-width: 480px) {
+        .container {
+          padding: 30px 20px;
+        }
       }
     </style>
   </head>
   <body>
+    <button class="theme-toggle" onclick="toggleTheme()">Toggle Theme</button>
     <div class="container">
-      <div class="verification-card">
-        <div class="icon">✔️</div>
-        <h1>Email Verified!</h1>
-        <p>
-          Thank you for verifying your email address. You can now go back to the
-          website and login.
-        </p>
-        <!-- <a href="homepage.html" class="btn">Go to Homepage</a> -->
-      </div>
+      <h1>🎉 Email Verified!</h1>
+      <p>
+        Welcome to GBESE! You can now log in and start managing your debts the
+        fun way.
+      </p>
+      <!-- <a class="btn" href="<%# redirectUrl || window.location.href %>"
+        >Go to Login</a
+      > -->
+      <!-- <%# if (redirectUrl) { %>
+      <p class="countdown">
+        Redirecting to login in <span id="countdown">5</span> seconds...
+      </p>
+      <%# } %> -->
     </div>
+
+    <script>
+      // Countdown redirect
+      // let seconds = 5;
+      // const countdown = document.getElementById("countdown");
+      // const interval = setInterval(() => {
+      //   seconds--;
+      //   countdown.textContent = seconds;
+      //   if (seconds === 0) {
+      //     clearInterval(interval);
+      //     window.location.href = "<%# redirectUrl || window.location.href %>";
+      //   }
+      // }, 1000);
+
+      // Dark/light theme toggle
+      function toggleTheme() {
+        const html = document.documentElement;
+        html.dataset.theme = html.dataset.theme === "dark" ? "light" : "dark";
+      }
+    </script>
   </body>
 </html>
