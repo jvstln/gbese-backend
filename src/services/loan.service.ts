@@ -24,7 +24,7 @@ class LoanService {
     return loanModel.find(filters);
   }
 
-  getUsersActiveLoans(accountId: string | mongoose.Types.ObjectId) {
+  getUsersActiveLoans(accountId: ObjectId) {
     return loanModel.find({
       accountId,
       status: {
@@ -33,7 +33,7 @@ class LoanService {
     });
   }
 
-  async getLoanStatistics(accountId: string) {
+  async getLoanStatistics(accountId: ObjectId) {
     const activeLoans = await this.getUsersActiveLoans(accountId);
     const totalAmountInDebt = activeLoans.reduce(
       (total, loan) => total.add(loan.totalAmountToBePaid),
@@ -88,7 +88,9 @@ class LoanService {
       }
 
       const balanceBefore = account.balance;
-      const balanceAfter = new Decimal(balanceBefore.toString()).add(amount);
+      const balanceAfter = new Decimal(balanceBefore.toString())
+        .add(amount)
+        .toString();
 
       // Create disbursement transaction
       const transaction = transactionService.declare({
@@ -96,7 +98,7 @@ class LoanService {
         type: TransactionTypes.CREDIT,
         category: TransactionCategories.LOAN,
         balanceBefore,
-        balanceAfter: balanceAfter.toString(),
+        balanceAfter: balanceAfter,
         description,
         status: TransactionStatuses.SUCCESS,
       });

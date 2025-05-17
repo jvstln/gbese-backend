@@ -7,12 +7,15 @@ import {
 import { getDebtStatisticsPipeline } from "../pipelines/debtRequest.pipeline";
 import mongoose from "mongoose";
 import { userService } from "./user.service";
-import { User } from "../types/user.type";
+import { UserDocument } from "../types/user.type";
 import { loanService } from "./loan.service";
 import Decimal from "decimal.js";
 
 class DebtRequestService {
-  async createDebtRequest(currentUser: User, data: DebtRequestCreation) {
+  async createDebtRequest(
+    currentUser: UserDocument,
+    data: DebtRequestCreation
+  ) {
     let loan;
 
     // Get the loan associated to the debt request
@@ -61,7 +64,7 @@ class DebtRequestService {
   async updateDebtRequest(
     id: string,
     updates: Partial<DebtRequestCreation>,
-    user: User
+    user: UserDocument
   ) {
     // Get the loan associated to the debt request
     if (updates.loanId) {
@@ -94,7 +97,7 @@ class DebtRequestService {
   /**
    * Gets all debt request a user can pay/clear
    */
-  async getShuffledDebtRequests(user: User) {
+  async getShuffledDebtRequests(user: UserDocument) {
     const debtRequests = await this.getDebtRequests({
       payerId: { $in: [user._id, null] },
       debtorId: { $ne: user._id },
@@ -105,14 +108,14 @@ class DebtRequestService {
     return debtRequests;
   }
 
-  async getDebtStatistics(userId: string) {
+  async getDebtStatistics(userId: ObjectId) {
     const debtRequestStats = await debtRequestModel
       .aggregate(getDebtStatisticsPipeline(userId))
       .exec();
     return debtRequestStats[0];
   }
 
-  async payDebtRequest(id: string, currentUser: User) {
+  async payDebtRequest(id: string, currentUser: UserDocument) {
     const debtRequest = await debtRequestModel.findById(id);
 
     if (!debtRequest) {
@@ -149,8 +152,8 @@ class DebtRequestService {
 
       const loanPayment = await loanService.payLoan(
         {
-          loanId: debtRequest.loanId.toString(),
-          accountId: payer.account._id.toString(),
+          loanId: debtRequest.loanId,
+          accountId: payer.account._id,
           amount: debtRequest.amount.toString(),
         },
         false

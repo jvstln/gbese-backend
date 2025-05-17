@@ -1,5 +1,5 @@
 import { userModel } from "../model/user.model";
-import { UserUpdate } from "../types/user.type";
+import { UserDocument, UserUpdate } from "../types/user.type";
 import { APIError } from "better-auth/api";
 
 class UserService {
@@ -11,7 +11,7 @@ class UserService {
     return userModel.find(filters).populate("account").exec();
   }
 
-  async updateUser(id: string, data: UserUpdate) {
+  async updateUser(id: ObjectId, data: UserUpdate) {
     const {
       identityDocuments,
       identityDocumentType,
@@ -23,7 +23,7 @@ class UserService {
       dateOfBirth,
     } = data;
 
-    const user = await userModel.findById(id).exec();
+    const user = await userModel.findById(id).populate("account").exec();
 
     if (!user) {
       throw new APIError("UNAUTHORIZED", { message: "User not found" });

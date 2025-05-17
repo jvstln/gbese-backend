@@ -1,8 +1,9 @@
-import { model, Schema } from "mongoose";
+import { model, Schema, Types } from "mongoose";
 import {
   Address,
   IdentityDocumentTypes,
   User,
+  UserDocument,
   UserModel,
 } from "../types/user.type";
 
@@ -81,11 +82,12 @@ const userSchema = new Schema<User>(
       required: true,
       default: 0,
       get: (value: any) => value.toString(),
+      set: (value: any) => new Types.Decimal128(value.toString()),
     },
   },
   {
     timestamps: true,
-    id: false,
+    // id: false,
     statics: {
       async validateUserExistence(userId: string) {
         const userExists = await this.exists({ _id: userId });
@@ -105,10 +107,12 @@ userSchema.virtual("account", {
   justOne: true,
 });
 
-userSchema.pre("save", function () {
+userSchema.pre("save", function (this: UserDocument, next) {
   if (this.isModified("firstName") || this.isModified("lastName")) {
     this.name = `${this.firstName} ${this.lastName}`;
   }
+
+  next();
 });
 
 userSchema.index({ name: "text", email: "text" });

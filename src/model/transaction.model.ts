@@ -1,6 +1,6 @@
 import mongoose, { model, Schema } from "mongoose";
 import {
-  ITransaction,
+  Transaction,
   TransactionCategories,
   TransactionStatuses,
   TransactionTypes,
@@ -8,7 +8,7 @@ import {
 import { generateTransactionReference } from "../utils/finance";
 import mongooseAggregatePaginate from "mongoose-aggregate-paginate-v2";
 
-const transactionSchema = new Schema<ITransaction>(
+const transactionSchema = new Schema<Transaction>(
   {
     accountId: {
       type: Schema.Types.ObjectId,
@@ -67,6 +67,6 @@ transactionSchema.index({ accountId: 1, createdAt: -1 });
 transactionSchema.plugin(mongooseAggregatePaginate);
 
 export const transactionModel = model<
-  ITransaction,
-  mongoose.AggregatePaginateModel<ITransaction>
+  Transaction,
+  mongoose.AggregatePaginateModel<Transaction>
 >("Transaction", transactionSchema);

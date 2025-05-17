@@ -1,6 +1,5 @@
 import mongoose from "mongoose";
 import { accountModel } from "../model/account.model";
-import axios from "axios";
 
 class AccountServices {
   async getAccount(filters: Record<string, unknown> = {}) {

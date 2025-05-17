@@ -9,7 +9,7 @@ class UserController {
       req.userSession!.user._id
     );
     const loanStats = await loanService.getLoanStatistics(
-      req.userSession!.user.account._id.toString()
+      req.userSession!.user.account._id
     );
 
     res.json({

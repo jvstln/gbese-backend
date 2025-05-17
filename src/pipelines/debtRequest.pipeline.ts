@@ -1,4 +1,4 @@
-export const getDebtStatisticsPipeline = (userId: string) => [
+export const getDebtStatisticsPipeline = (userId: ObjectId) => [
   {
     $match: {
       $or: [{ debtorId: userId }, { payerId: userId }],

@@ -2,6 +2,8 @@ import { NextFunction, Request, Response } from "express";
 import { authService } from "../services/auth.service";
 import { APIError } from "better-auth/api";
 import { userService } from "../services/user.service";
+import { accountModel } from "../model/account.model";
+import { accountService } from "../services/account.service";
 
 class AuthMiddleware {
   async handleSession(req: Request, res: Response, next: NextFunction) {
@@ -17,7 +19,15 @@ class AuthMiddleware {
       throw new APIError("UNAUTHORIZED", { message: "User not found" });
     }
 
-    req.userSession = { session: sessionData.session, user };
+    const account = await accountService.getAccount({ userId: user._id });
+
+    if (!account) {
+      throw new APIError("BAD_REQUEST", {
+        message: "Account not found. User needs to have an account to prceed",
+      });
+    }
+
+    req.userSession = { session: sessionData.session, user, account };
     next();
   }
 

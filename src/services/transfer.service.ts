@@ -161,7 +161,7 @@ export class TransferService {
     accountNumber,
     bankCode,
     description,
-  }: Withdraw & { accountId: string }) {
+  }: Withdraw & { accountId: ObjectId }) {
     const account = await accountService.getAccount({ _id: accountId });
     if (!account) {
       throw new APIError("BAD_REQUEST", {

@@ -21,7 +21,7 @@ class TransferController {
     res: Response
   ) {
     const fundResponse = await transferService.fundAccount({
-      accountId: req.userSession!.user.account._id.toString(),
+      accountId: req.userSession!.user.account._id,
       ...req.query,
     });
 
@@ -33,7 +33,7 @@ class TransferController {
     res: Response
   ) {
     const withdrawalResponse = await transferService.withdraw({
-      accountId: req.userSession!.user.account._id.toString(),
+      accountId: req.userSession!.user.account._id,
       ...req.body,
     });
 

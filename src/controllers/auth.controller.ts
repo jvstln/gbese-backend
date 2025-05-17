@@ -6,7 +6,6 @@ import { authService } from "../services/auth.service";
 import { handleRawResponse } from "../utils/utils";
 import { StatusCodes } from "../types/api.type";
 import { accountService } from "../services/account.service";
-import { userModel } from "../model/user.model";
 import { userService } from "../services/user.service";
 
 class AuthController {
@@ -38,7 +37,7 @@ class AuthController {
 
   async verifyEmail(req: Request<{}, {}, {}, VerifyEmail>, res: Response) {
     try {
-      const user = await userModel.findById(req.query.userId);
+      const user = await userService.getUser({ _id: req.query.userId });
       if (!user) throw new APIError("NOT_FOUND", { message: "User not found" });
 
       const verificationResponse = await authService.verifyEmail(req.query);
