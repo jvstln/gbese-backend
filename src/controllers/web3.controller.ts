@@ -50,7 +50,7 @@ class Web3Controller {
 
       const types = { KYCVerification: [{ name: "wallet", type: "address" }] };
 
-      const value = { wallet: "0xWalletAddressToVerify" };
+      const value = { wallet };
 
       const signature = await this.signer.signTypedData(domain, types, value);
 
