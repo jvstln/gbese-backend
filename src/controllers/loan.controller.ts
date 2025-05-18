@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { loanService } from "../services/loan.service";
-import { BorrowLoan, PayLoanUsingIds } from "../types/loan.type";
+import { BorrowLoan, LoanFilters, PayLoanUsingIds } from "../types/loan.type";
 import mongoose from "mongoose";
 
 class LoanController {
@@ -20,10 +20,17 @@ class LoanController {
     });
   }
 
-  async getUserLoans(req: Request, res: Response) {
-    const userLoans = await loanService.getLoans({
-      accountId: req.userSession!.account._id.toString(),
-    });
+  async getUserLoans(req: Request<{}, {}, {}, LoanFilters>, res: Response) {
+    const { status } = req.query;
+    const filters: Record<string, unknown> = {
+      accountId: req.userSession!.account._id,
+    };
+
+    if (status) {
+      filters.status = { $in: Array.isArray(status) ? status : [status] };
+    }
+
+    const userLoans = await loanService.getLoans(filters);
 
     res.json({
       success: true,

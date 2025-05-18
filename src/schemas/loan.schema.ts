@@ -5,6 +5,7 @@ import { LoanStatuses } from "../types/loan.type";
 export const borrowLoanSchema = Joi.object({
   amount: amountSchema,
   durationInDays: Joi.number().min(1).required(),
+  description: Joi.string().optional(),
 });
 
 export const payLoanBodySchema = Joi.object({
@@ -16,5 +17,10 @@ export const payLoanParamSchema = Joi.object({
 });
 
 export const loanFiltersSchema = Joi.object({
-  status: Joi.string().valid(...Object.values(LoanStatuses)),
+  status: Joi.alternatives().conditional(Joi.string(), {
+    then: Joi.string().valid(...Object.values(LoanStatuses)),
+    otherwise: Joi.array().items(
+      Joi.string().valid(...Object.values(LoanStatuses))
+    ),
+  }),
 });

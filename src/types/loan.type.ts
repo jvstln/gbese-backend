@@ -55,5 +55,5 @@ export interface PayLoan {
 }
 
 export interface LoanFilters {
-  status?: LoanStatuses;
+  status?: LoanStatuses | LoanStatuses[];
 }
