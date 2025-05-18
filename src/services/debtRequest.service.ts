@@ -12,6 +12,7 @@ import { userService } from "./user.service";
 import { UserDocument } from "../types/user.type";
 import { loanService } from "./loan.service";
 import Decimal from "decimal.js";
+import { accountService } from "./account.service";
 
 class DebtRequestService {
   async createDebtRequest(
@@ -63,6 +64,20 @@ class DebtRequestService {
       ...data,
       loanId: loan._id,
     });
+
+    if (data.payerId) {
+      const payer = await accountService.getAccountByIdOrNumber(
+        data.payerId.toString()
+      );
+
+      if (!payer) {
+        throw new APIError("UNPROCESSABLE_ENTITY", {
+          message: "User with account number or ID not found",
+        });
+      }
+      debtRequest.payerId = payer.userId;
+    }
+
     await debtRequest.save();
     return debtRequest.populate<
       DebtRequestVirtual<"loan" | "debtor" | "payer">
