@@ -11,7 +11,11 @@ middlewareRouter.all("/api/v1/better-auth/{*any}", toNodeHandler(auth));
 
 middlewareRouter.use(
   cors({
-    origin: [/(https?:\/\/)?localhost(:\d+)?/, /http(s)?:\/\/127.0.0.1(:\d+)?/],
+    origin: [
+      /(https?:\/\/)?localhost(:\d+)?/,
+      /http(s)?:\/\/127.0.0.1(:\d+)?/,
+      /https?:\/\/gbese-app-xsfo.vercel.app/,
+    ],
     credentials: true,
     methods: ["PUT", "PATCH", "POST", "GET", "DELETE"],
   })

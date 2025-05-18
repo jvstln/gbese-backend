@@ -2,17 +2,22 @@ import { APIError } from "better-auth/api";
 import { debtRequestModel } from "../model/debtRequest.model";
 import {
   DebtRequestCreation,
+  DebtRequestDocument,
   DebtRequestStatuses,
+  DebtRequestVirtual,
 } from "../types/debtRequest.type";
 import { getDebtStatisticsPipeline } from "../pipelines/debtRequest.pipeline";
 import mongoose from "mongoose";
 import { userService } from "./user.service";
-import { User } from "../types/user.type";
+import { UserDocument } from "../types/user.type";
 import { loanService } from "./loan.service";
 import Decimal from "decimal.js";
 
 class DebtRequestService {
-  async createDebtRequest(currentUser: User, data: DebtRequestCreation) {
+  async createDebtRequest(
+    currentUser: UserDocument,
+    data: DebtRequestCreation
+  ) {
     let loan;
 
     // Get the loan associated to the debt request
@@ -29,7 +34,7 @@ class DebtRequestService {
       }
     } else {
       // Pick the first active loan of the user
-      const activeLoans = await loanService.getUsersActiveLoans(
+      const activeLoans = await loanService.getUserActiveLoans(
         currentUser.account._id
       );
 
@@ -46,26 +51,50 @@ class DebtRequestService {
       data.amount = loan.amountRemaining;
     }
 
+    if (
+      new Decimal(data.amount.toString()).gt(new Decimal(loan.amountRemaining))
+    ) {
+      throw new APIError("UNPROCESSABLE_ENTITY", {
+        message: "Amount to be paid cannot be greater than amount in debt",
+      });
+    }
+
     const debtRequest = new debtRequestModel({
       ...data,
       loanId: loan._id,
     });
     await debtRequest.save();
-    return debtRequest.populate("debtor payer");
+    return debtRequest.populate<
+      DebtRequestVirtual<"loan" | "debtor" | "payer">
+    >("debtor payer loan");
   }
 
   async getDebtRequests(filters: Record<string, unknown> = {}) {
-    return debtRequestModel.find(filters).populate("debtor payer loan");
+    return debtRequestModel
+      .find(filters)
+      .populate<DebtRequestVirtual<"loan" | "debtor" | "payer">>(
+        "debtor payer loan"
+      );
   }
 
   async updateDebtRequest(
     id: string,
     updates: Partial<DebtRequestCreation>,
-    user: User
+    user: UserDocument
   ) {
     // Get the loan associated to the debt request
+    const debtRequest = await debtRequestModel.findById(id);
+
+    if (!debtRequest) {
+      throw new APIError("NOT_FOUND", {
+        message: "Debt request not found",
+      });
+    }
+
+    updates.amount = updates.amount ?? debtRequest.amount;
+
     if (updates.loanId) {
-      const loan = await loanService.exists({
+      const loan = await loanService.getLoan({
         _id: updates.loanId,
         accountId: user.account._id,
       });
@@ -75,26 +104,30 @@ class DebtRequestService {
           message: "User has no loan with the specified ID",
         });
       }
-    }
 
-    const debtRequest = await debtRequestModel.findById(id);
-
-    if (!debtRequest) {
-      throw new APIError("NOT_FOUND", {
-        message: "Debt request not found",
-      });
+      if (
+        new Decimal(updates.amount.toString()).gt(
+          new Decimal(loan.amountRemaining)
+        )
+      ) {
+        throw new APIError("UNPROCESSABLE_ENTITY", {
+          message: "Amount to be paid cannot be greater than amount in debt",
+        });
+      }
     }
 
     debtRequest.set(updates);
 
     const updatedDebtRequest = await debtRequest.save();
-    return updatedDebtRequest.populate("debtor payer");
+    return updatedDebtRequest.populate<
+      DebtRequestVirtual<"loan" | "debtor" | "payer">
+    >("debtor payer loan");
   }
 
   /**
    * Gets all debt request a user can pay/clear
    */
-  async getShuffledDebtRequests(user: User) {
+  async getShuffledDebtRequests(user: UserDocument) {
     const debtRequests = await this.getDebtRequests({
       payerId: { $in: [user._id, null] },
       debtorId: { $ne: user._id },
@@ -105,15 +138,17 @@ class DebtRequestService {
     return debtRequests;
   }
 
-  async getDebtStatistics(userId: string) {
+  async getDebtStatistics(userId: ObjectId) {
     const debtRequestStats = await debtRequestModel
       .aggregate(getDebtStatisticsPipeline(userId))
       .exec();
     return debtRequestStats[0];
   }
 
-  async payDebtRequest(id: string, currentUser: User) {
-    const debtRequest = await debtRequestModel.findById(id);
+  async payDebtRequest(id: string, currentUser: UserDocument) {
+    let debtRequest = await debtRequestModel
+      .findById(id)
+      .populate<DebtRequestVirtual<"loan">>("loan");
 
     if (!debtRequest) {
       throw new APIError("NOT_FOUND", {
@@ -145,12 +180,13 @@ class DebtRequestService {
         .add(debtRequest.debtPoint.toString())
         .toString();
 
-      await payer.save();
+      // payer should be saved in loanService.payLoan
+      // await payer.save();
 
       const loanPayment = await loanService.payLoan(
         {
-          loanId: debtRequest.loanId.toString(),
-          accountId: payer.account._id.toString(),
+          loan: debtRequest.loan,
+          account: payer.account,
           amount: debtRequest.amount.toString(),
         },
         false

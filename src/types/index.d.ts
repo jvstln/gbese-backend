@@ -1,11 +1,20 @@
-import { userModel } from "../model/user.model";
-import { User } from "./user.type";
+import { AccountDocument } from "./account.type";
+import { UserDocument } from "./user.type";
+import mongoose from "mongoose";
 
-declare module "express" {
-  interface Request {
-    userSession?: {
-      user: User;
-      session: unknown;
-    };
+declare global {
+  namespace Express {
+    interface Request {
+      userSession?: {
+        user: UserDocument;
+        account: AccountDocument;
+        session: unknown;
+      };
+    }
   }
+
+  type ObjectId = mongoose.Types.ObjectId;
+  type Decimal128 = mongoose.Types.Decimal128 | string;
 }
+
+// export type ObjectId = mongoose.Types.ObjectId;

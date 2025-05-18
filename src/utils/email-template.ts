@@ -250,98 +250,56 @@ export const verifyEmailHTMLTemplate = ({
 }) => `
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Verify Your Email</title>
-    <style>
-      ${styles}
-      body {
-        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-        line-height: 1.6;
-        margin: 0;
-        padding: 0;
-        background-color: #f4f4f4;
-      }
-      .container {
-        max-width: 600px;
-        margin: 20px auto;
-        background-color: #ffffff;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        padding: 30px;
-      }
-      .bg-gradient {
-        background: linear-gradient(135deg, #6e8efb 0%, #a777e3 100%) fixed;
-      }
-      .content {
-        color: #333333;
-        padding: 20px 0;
-      }
-      .verification-button {
-        display: inline-block;
-        background-color: #4caf50;
-        color: #ffffff;
-        text-decoration: none;
-        padding: 12px 30px;
-        border-radius: 5px;
-        margin: 20px 0;
-        font-weight: bold;
-      }
-      .verification-code {
-        background-color: #f8f8f8;
-        padding: 15px;
-        border-radius: 5px;
-        font-family: monospace;
-        font-size: 24px;
-        text-align: center;
-        letter-spacing: 5px;
-        margin: 20px 0;
-      }
-      .footer {
-        text-align: center;
-        color: #666666;
-        font-size: 12px;
-        margin-top: 30px;
-        padding-top: 20px;
-        border-top: 1px solid #eeeeee;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="container">
-      <div
-        class="flex flex-col justify-center items-center p-8 rounded-xl bg-gradient"
-      >
-        <h1 class="text-4xl font-bold">Gbese</h1>
-        <p style="font-size: 1.5rem">Your debt saving platform</p>
-      </div>
-      <div class="content">
-        <h2>Verify Your Email Address</h2>
-        <p>Hello <span style="font-weight: 800">${name}</span> ,</p>
-        <p>
-          Thank you for signing up! Please verify your email address to complete
-          your registration and access your account.
-        </p>
+<head>
+  <meta charset="UTF-8" />
+  <title>Email Verification</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4;">
+  <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f4f4f4; padding: 40px 0;">
+    <tr>
+      <td align="center">
+        <table width="600" border="0" cellspacing="0" cellpadding="0" style="background-color: #ffffff; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+          <tr>
+            <td style="background-color: #05238C; padding: 20px 40px; color: #ffffff; text-align: center;">
+              <h2 style="margin: 0; font-size: 18px; font-style: italic;">Hy there ${name}</h2>
+              <h1 style="margin: 0; font-size: 24px;">Welcome to GBESE 🚀</h1>
+              <p style="margin: 5px 0 0;">The only place where debt makes *sense* (sometimes).</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 40px;">
+              <h2 style="color: #05238C; margin-top: 0;">Just one more thing...</h2>
+              <p style="font-size: 16px; color: #333333;">
+                You're almost in! To keep the bad guys out and the good vibes in, we need to verify your email address.
+              </p>
+              <p style="font-size: 16px; color: #333333;">
+                Click the shiny blue button below to confirm that you're indeed real and ready to use GBESE.
+              </p>
 
-        <div style="text-align: center">
-          <a href="${url}" class="verification-button bg-gradient"
-            >Verify Email Address</a
-          >
-        </div>
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="${url}" style="background-color: #05238C; color: #ffffff; text-decoration: none; padding: 14px 24px; border-radius: 6px; font-size: 16px; display: inline-block;">
+                  Verify My Email
+                </a>
+              </div>
 
-        <p>
-          If you didn't create an account, you can safely ignore this email.
-        </p>
-
-        <p>Best regards,<br />The Gbese Team</p>
-      </div>
-      <div class="footer">
-        <p>This email was sent by Gbese. Please do not reply to this email.</p>
-        <p>&copy; ${new Date().getFullYear()} Gbese. All rights reserved.</p>
-      </div>
-    </div>
-  </body>
+              <p style="font-size: 14px; color: #666666;">
+                If you didn't sign up for GBESE, no worries — you can safely ignore this email. But if you did, and you're excited to settle (and pass on) some debts, then you're in the right place!
+              </p>
+              <p style="font-size: 14px; color: #666666;">Stay out of debt (or at least keep it moving),</p>
+              <p style="font-size: 14px; color: #05238C; font-weight: bold;">- The GBESE Team</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="background-color: #f0f0f0; padding: 20px; text-align: center; font-size: 12px; color: #999999;">
+              © ${new Date().getFullYear()} GBESE Inc. All rights reserved.<br>
+              You can't escape your debts, but you can manage them with us.
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
 </html>
 
 
@@ -354,22 +312,28 @@ export const verifyEmailTextTemplate = ({
   name: string;
   url: string;
 }) => `
-Gbese
-Your debt saving platform
-
-Verify Your Email Address
-
 Hello ${name},
 
-Thank you for signing up! Please verify your email address to complete your registration and access your account.
+Welcome to GBESE 🚀
+The only place where debt makes *sense* (sometimes).
 
-Verify Email Address: ${url}
+Just one more thing...
 
-If you didn't create an account, you can safely ignore this email.
+You're almost in! To keep the bad guys out and the good vibes in, we need to verify your email address.
 
-Best regards,
-The Gbese Team
+Click the link below to confirm that you're indeed real and ready to use GBESE:
 
-This email was sent by Gbese. Please do not reply to this email.
-© 2025 Gbese. All rights reserved.
+👉 ${url}
+
+If you didn't sign up for GBESE, no worries — you can safely ignore this email.
+
+But if you did, and you're excited to settle (and pass on) some debts, then you're in the right place!
+
+Stay out of debt (or at least keep it moving),
+
+- The GBESE Team
+
+© ${new Date().getFullYear()} GBESE Inc. All rights reserved.
+You can't escape your debts, but you can manage them with us.
+
 `;

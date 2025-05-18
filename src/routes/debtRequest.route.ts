@@ -47,6 +47,6 @@ debtRequestRouter.patch(
 
 debtRequestRouter.get(
   "/accept/:debtRequestId",
-  authMiddleware.handleUserVerification,
+  authMiddleware.handleAccountVerification,
   debtRequestController.payDebtRequest
 );

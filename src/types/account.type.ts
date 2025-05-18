@@ -1,17 +1,17 @@
 import mongoose from "mongoose";
 import { TransactionCategories } from "./transaction.type";
-import { User } from "./user.type";
+import { UserDocument } from "./user.type";
 
 export interface PeerTransfer {
-  fromAccountId: string;
-  toAccountId: string;
+  fromAccount: AccountDocument;
+  toAccount: AccountDocument;
   amount: string;
   description?: string;
   transactionCategory?: TransactionCategories;
 }
 
 export interface FundAccount {
-  accountId: string;
+  account: AccountDocument;
   amount: string;
   callbackUrl: string;
 }
@@ -23,13 +23,16 @@ export interface Withdraw {
   description?: string;
 }
 
-export interface IAccount {
-  _id: mongoose.Types.ObjectId;
-  userId: mongoose.Types.ObjectId;
-  balance: mongoose.Types.Decimal128 | string;
+export interface Account {
+  userId: ObjectId;
+  balance: Decimal128;
   accountNumber: string;
   isActive: boolean;
   createdAt?: Date;
   updatedAt?: Date;
-  user: User;
+  user: UserDocument;
+}
+
+export interface AccountDocument extends mongoose.HydratedDocument<Account> {
+  user: UserDocument;
 }

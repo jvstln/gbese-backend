@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { IAccount } from "./account.type";
+import { Account, AccountDocument } from "./account.type";
 
 export enum IdentityDocumentTypes {
   NIN = "nin",
@@ -20,13 +20,16 @@ export interface UserUpdate {
 }
 
 export interface User extends UserUpdate {
-  _id: string;
   name: string;
   email: string;
-  points: mongoose.Types.Decimal128 | string;
-  account: IAccount;
+  points: Decimal128;
+  account: AccountDocument;
   image: string;
   emailVerified: boolean;
+}
+
+export interface UserDocument extends mongoose.HydratedDocument<User> {
+  account: AccountDocument;
 }
 
 export interface UserModel extends mongoose.Model<User> {

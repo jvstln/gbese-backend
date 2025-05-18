@@ -1,8 +1,8 @@
-import { Schema, model } from "mongoose";
+import { Schema, model, Types } from "mongoose";
 import { DebtRequestStatuses, DebtRequest } from "../types/debtRequest.type";
-import Decimal from "decimal.js";
 import { userModel } from "./user.model";
 import { APIError } from "better-auth/api";
+import { convertCurrency } from "../utils/finance";
 
 const debtRequestSchema = new Schema<DebtRequest>(
   {
@@ -43,24 +43,14 @@ const debtRequestSchema = new Schema<DebtRequest>(
   },
   {
     timestamps: true,
-    methods: {
-      getDebtPoint: function () {
-        /**
-         * Maths for debt point
-         * ₦10000 =20 Gbese points --- 500 = 1 Gbese point
-         * 100Gbp = 1 token
-         * 100Gbt = 1 Nft
-         */
-        const debtRequestAmount = this.amount.toString();
-        return new Decimal(debtRequestAmount).div(500).toString();
-      },
-    },
   }
 );
 
 debtRequestSchema.pre("save", function (next) {
   if (this.isModified("amount")) {
-    this.debtPoint = this.getDebtPoint();
+    this.debtPoint = new Types.Decimal128(
+      convertCurrency(this.amount.toString(), "NGN", "GBP")
+    );
   }
 
   // ensure that the debtor and the payer are not the same
@@ -94,7 +84,4 @@ debtRequestSchema.virtual("loan", {
   justOne: true,
 });
 
-export const debtRequestModel = model<DebtRequest>(
-  "DebtRequest",
-  debtRequestSchema
-);
+export const debtRequestModel = model("DebtRequest", debtRequestSchema);

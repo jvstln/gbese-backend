@@ -1,9 +1,9 @@
-import { Schema, model } from "mongoose";
+import { Schema, model, Types, Model } from "mongoose";
 import { userModel } from "./user.model";
 import { generateAccountNumber } from "../utils/finance";
-import { IAccount } from "../types/account.type";
+import { Account } from "../types/account.type";
 
-const accountSchema = new Schema<IAccount>(
+const accountSchema = new Schema<Account>(
   {
     userId: {
       type: Schema.Types.ObjectId,
@@ -17,6 +17,7 @@ const accountSchema = new Schema<IAccount>(
       required: [true, "Balance is required"],
       default: 0,
       get: (v: any) => v.toString(),
+      set: (v: any) => new Types.Decimal128(v.toString()),
     },
     accountNumber: {
       type: String,
@@ -43,4 +44,4 @@ accountSchema.virtual("user", {
   justOne: true,
 });
 
-export const accountModel = model<IAccount>("Account", accountSchema);
+export const accountModel = model<Account>("Account", accountSchema);

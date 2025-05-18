@@ -15,3 +15,4 @@ userRouter.patch(
 );
 
 userRouter.get("/search", userController.searchUser);
+userRouter.get("/all", userController.getAllUsers);

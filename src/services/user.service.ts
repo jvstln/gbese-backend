@@ -1,5 +1,5 @@
 import { userModel } from "../model/user.model";
-import { UserUpdate } from "../types/user.type";
+import { UserDocument, UserUpdate } from "../types/user.type";
 import { APIError } from "better-auth/api";
 
 class UserService {
@@ -11,7 +11,7 @@ class UserService {
     return userModel.find(filters).populate("account").exec();
   }
 
-  async updateUser(id: string, data: UserUpdate) {
+  async updateUser(user: UserDocument, data: UserUpdate) {
     const {
       identityDocuments,
       identityDocumentType,
@@ -22,12 +22,6 @@ class UserService {
       lastName,
       dateOfBirth,
     } = data;
-
-    const user = await userModel.findById(id).exec();
-
-    if (!user) {
-      throw new APIError("UNAUTHORIZED", { message: "User not found" });
-    }
 
     // upload profile image. Image should be uploaded to cloudinary from frontend
     if (image) user.image = image;

@@ -2,6 +2,8 @@ import { NextFunction, Request, Response } from "express";
 import { authService } from "../services/auth.service";
 import { APIError } from "better-auth/api";
 import { userService } from "../services/user.service";
+import { accountModel } from "../model/account.model";
+import { accountService } from "../services/account.service";
 
 class AuthMiddleware {
   async handleSession(req: Request, res: Response, next: NextFunction) {
@@ -17,7 +19,15 @@ class AuthMiddleware {
       throw new APIError("UNAUTHORIZED", { message: "User not found" });
     }
 
-    req.userSession = { session: sessionData.session, user };
+    const account = await accountService.getAccount({ userId: user._id });
+
+    if (!account) {
+      throw new APIError("BAD_REQUEST", {
+        message: "Account not found. User needs to have an account to prceed",
+      });
+    }
+
+    req.userSession = { session: sessionData.session, user, account };
     next();
   }
 
@@ -27,7 +37,26 @@ class AuthMiddleware {
     next: NextFunction
   ) {
     if (!req.userSession || !req.userSession.user.emailVerified) {
-      throw new APIError("FORBIDDEN", { message: "User email not verified" });
+      throw new APIError("FORBIDDEN", {
+        message:
+          "User email not verified. Check your email for verificaton link",
+      });
+    }
+
+    if (!req.userSession.user.identityDocuments.length) {
+      throw new APIError("UNPROCESSABLE_ENTITY", {
+        message: "User needs to complete KYC verification",
+      });
+    }
+
+    next();
+  }
+
+  handleAccountVerification(req: Request, res: Response, next: NextFunction) {
+    if (!req.userSession!.account.isActive) {
+      throw new APIError("UNPROCESSABLE_ENTITY", {
+        message: "User account is disabled",
+      });
     }
 
     next();

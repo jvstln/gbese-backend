@@ -1,14 +1,15 @@
 import { Request, Response } from "express";
 import { loanService } from "../services/loan.service";
-import { BorrowLoan, PayLoan } from "../types/loan.type";
+import { BorrowLoan, LoanFilters, PayLoanUsingIds } from "../types/loan.type";
+import mongoose from "mongoose";
 
 class LoanController {
   async borrowLoan(
-    req: Request<{}, {}, Omit<BorrowLoan, "accountId">>,
+    req: Request<{}, {}, Omit<BorrowLoan, "account">>,
     res: Response
   ) {
     const borrowedLoanData = await loanService.borrowLoan({
-      accountId: req.userSession!.user.account._id.toString(),
+      account: req.userSession!.account,
       ...req.body,
     });
 
@@ -19,10 +20,17 @@ class LoanController {
     });
   }
 
-  async getUserLoans(req: Request, res: Response) {
-    const userLoans = await loanService.getLoans({
-      accountId: req.userSession!.user.account._id.toString(),
-    });
+  async getUserLoans(req: Request<{}, {}, {}, LoanFilters>, res: Response) {
+    const { status } = req.query;
+    const filters: Record<string, unknown> = {
+      accountId: req.userSession!.account._id,
+    };
+
+    if (status) {
+      filters.status = { $in: Array.isArray(status) ? status : [status] };
+    }
+
+    const userLoans = await loanService.getLoans(filters);
 
     res.json({
       success: true,
@@ -32,12 +40,16 @@ class LoanController {
   }
 
   async payLoan(
-    req: Request<{ loanId: string }, {}, Omit<PayLoan, "loanId" | "accountId">>,
+    req: Request<
+      { loanId: string },
+      {},
+      Omit<PayLoanUsingIds, "loanId" | "account">
+    >,
     res: Response
   ) {
-    const loanPayment = await loanService.payLoan({
-      loanId: req.params.loanId,
-      accountId: req.userSession!.user.account._id.toString(),
+    const loanPayment = await loanService.payLoanUsingId({
+      loanId: new mongoose.Types.ObjectId(req.params.loanId),
+      account: req.userSession!.account,
       ...req.body,
     });
 

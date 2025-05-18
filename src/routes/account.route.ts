@@ -9,11 +9,8 @@ import {
 import { transferController } from "../controllers/transfer.controller";
 import { authMiddleware } from "../middlewares/auth.middleware";
 import { paystackController } from "../controllers/paystack.controller";
-import { loanRouter } from "./loan.route";
 
 export const accountRouter = express.Router();
-
-accountRouter.use("/loans", loanRouter);
 
 accountRouter.get("/me", accountController.getUserAccount);
 
@@ -30,14 +27,14 @@ accountRouter.patch("/enable", accountController.enableUserAccount);
 accountRouter.get(
   "/fund",
   validationMiddleware.validate({ path: "query", schema: fundAccountSchema }),
-  transferController.initiateFundUserAccount
+  transferController.fundAccount
 );
 
 accountRouter.post(
   "/withdraw",
   validationMiddleware.validate({ path: "body", schema: withdrawSchema }),
   authMiddleware.handleUserVerification,
-  transferController.initiateWithdrawal
+  transferController.withdraw
 );
 
 accountRouter.get("/banks", paystackController.getBanks);

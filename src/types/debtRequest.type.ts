@@ -1,20 +1,31 @@
-import mongoose from "mongoose";
+import mongoose, { HydratedDocument } from "mongoose";
+import { UserDocument } from "./user.type";
+import { LoanDocument } from "./loan.type";
 
 export interface DebtRequestCreation {
-  debtorId: mongoose.Types.ObjectId;
-  loanId: mongoose.Types.ObjectId;
-  payerId?: mongoose.Types.ObjectId;
-  amount: mongoose.Types.Decimal128 | string;
+  debtorId: ObjectId;
+  loanId: ObjectId;
+  payerId?: ObjectId;
+  amount: Decimal128;
   description?: string;
 }
 
 export interface DebtRequest extends DebtRequestCreation {
-  debtPoint: mongoose.Types.Decimal128;
+  debtPoint: Decimal128;
   status: string;
-  createdAt: Date;
-  updatedAt: Date;
-  getDebtPoint(): mongoose.Types.Decimal128;
 }
+
+interface DebtRequestVirtualMap {
+  loan: LoanDocument;
+  debtor: UserDocument;
+  payer: UserDocument;
+}
+
+export type DebtRequestVirtual<T extends keyof DebtRequestVirtualMap> = {
+  [key in T]: DebtRequestVirtualMap[key];
+};
+
+export interface DebtRequestDocument extends HydratedDocument<DebtRequest> {}
 
 export enum DebtRequestStatuses {
   PENDING = "pending",

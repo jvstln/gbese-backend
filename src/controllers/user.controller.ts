@@ -9,7 +9,7 @@ class UserController {
       req.userSession!.user._id
     );
     const loanStats = await loanService.getLoanStatistics(
-      req.userSession!.user.account._id.toString()
+      req.userSession!.account._id
     );
 
     res.json({
@@ -24,10 +24,7 @@ class UserController {
   }
 
   async updateUser(req: Request, res: Response) {
-    const user = await userService.updateUser(
-      req.userSession!.user._id,
-      req.body
-    );
+    const user = await userService.updateUser(req.userSession!.user, req.body);
 
     res.json({
       success: true,
@@ -38,6 +35,16 @@ class UserController {
 
   async searchUser(req: Request, res: Response) {
     const users = await userService.searchUser(req.query.search as string);
+
+    res.json({
+      success: true,
+      message: "Users fetched successfully",
+      data: users,
+    });
+  }
+
+  async getAllUsers(req: Request, res: Response) {
+    const users = await userService.getUsers();
 
     res.json({
       success: true,

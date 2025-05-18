@@ -1,4 +1,5 @@
-import mongoose from "mongoose";
+import mongoose, { HydratedDocument } from "mongoose";
+import { AccountDocument } from "./account.type";
 
 export enum LoanStatuses {
   PENDING = "pending",
@@ -8,11 +9,10 @@ export enum LoanStatuses {
 }
 
 export interface Loan {
-  _id: string;
-  accountId: mongoose.Types.ObjectId;
-  principal: mongoose.Types.Decimal128 | string;
+  accountId: ObjectId;
+  principal: Decimal128;
   interestRate: number;
-  amountPaid: mongoose.Types.Decimal128 | string;
+  amountPaid: Decimal128;
   durationInDays: number;
   status: LoanStatuses;
   disbursedAt: Date;
@@ -21,6 +21,8 @@ export interface Loan {
   totalAmountToBePaid: string;
   amountRemaining: string;
 }
+
+export type LoanDocument = HydratedDocument<Loan>;
 
 export interface LoanModel extends mongoose.Model<Loan> {
   getLoanLimit: (
@@ -34,18 +36,24 @@ export interface LoanModel extends mongoose.Model<Loan> {
 }
 
 export interface BorrowLoan {
-  accountId: string;
+  account: AccountDocument;
   amount: string;
   durationInDays: number;
-  description?: string;
+  description: string;
+}
+
+export interface PayLoanUsingIds {
+  loanId: ObjectId;
+  account: AccountDocument;
+  amount?: string;
 }
 
 export interface PayLoan {
-  loanId: string;
-  accountId: string;
+  loan: LoanDocument;
+  account: AccountDocument;
   amount?: string;
 }
 
 export interface LoanFilters {
-  status?: LoanStatuses;
+  status?: LoanStatuses | LoanStatuses[];
 }

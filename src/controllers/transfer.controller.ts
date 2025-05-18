@@ -1,12 +1,18 @@
 import { Request, Response } from "express";
 import { transferService } from "../services/transfer.service";
 import { FundAccount, Withdraw as Withdrawal } from "../types/account.type";
+import { accountService } from "../services/account.service";
 
 class TransferController {
   async peerTransfer(req: Request, res: Response) {
+    const toAccount = accountService.getAccountByIdOrNumber(
+      req.body.toAccountId
+    );
+
     const transferResponse = await transferService.peerTransfer({
-      fromAccountId: req.userSession?.user.account._id,
       ...req.body,
+      fromAccount: req.userSession!.account,
+      toAccount,
     });
 
     res.status(201).json({
@@ -16,34 +22,28 @@ class TransferController {
     });
   }
 
-  async initiateFundUserAccount(
-    req: Request<{}, {}, {}, Omit<FundAccount, "accountId">>,
+  async fundAccount(
+    req: Request<{}, {}, {}, Omit<FundAccount, "account">>,
     res: Response
   ) {
     const fundResponse = await transferService.fundAccount({
-      accountId: req.userSession!.user.account._id.toString(),
       ...req.query,
+      account: req.userSession!.account,
     });
 
     res.redirect(fundResponse.authorization_url);
   }
 
-  async initiateWithdrawal(
-    req: Request<{}, {}, {}, Withdrawal>,
-    res: Response
-  ) {
+  async withdraw(req: Request<{}, {}, {}, Withdrawal>, res: Response) {
     const withdrawalResponse = await transferService.withdraw({
-      accountId: req.userSession!.user.account._id.toString(),
+      account: req.userSession!.account,
       ...req.body,
     });
 
     res.json({
       success: true,
       message: "Withdrawal successful",
-      data: {
-        ...withdrawalResponse.metadata,
-        transaction: withdrawalResponse,
-      },
+      data: withdrawalResponse,
     });
   }
 }

@@ -9,12 +9,12 @@ export const web3Router = express.Router();
 web3Router.post(
   "/verify-kyc",
   validationMiddleware.validate({ path: "body", schema: verifyKycSchema }),
-  web3Controller.verifyKYC
+  web3Controller.verifyKYC.bind(web3Controller)
 );
 
 web3Router.post(
   "/withdraw",
   validationMiddleware.validate({ path: "body", schema: withdrawSchema }),
   authMiddleware.handleUserVerification,
-  web3Controller.withdrawToWallet
+  web3Controller.withdrawToWallet.bind(web3Controller)
 );
