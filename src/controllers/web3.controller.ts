@@ -42,17 +42,22 @@ class Web3Controller {
     try {
       const issuedAt = Math.floor(Date.now() / 1000);
       const domain = {
-        name: "KYCVerifier",
+        name: "Gbese KYC",
         version: "1",
         chainId: 84532,
         verifyingContract: this.kycAddr,
       };
 
-      const types = { KYCVerification: [{ name: "wallet", type: "address" }] };
+      const types = {
+        KYC: [
+          { name: "user", type: "address" },
+          { name: "issuedAt", type: "uint256" },
+        ],
+      };
 
-      const value = { wallet };
+      const message = { user: wallet, issuedAt };
 
-      const signature = await this.signer.signTypedData(domain, types, value);
+      const signature = await this.signer.signTypedData(domain, types, message);
 
       const tx = await this.kycContract.verifyKYC(wallet, issuedAt, signature);
       const receipt = await tx.wait();

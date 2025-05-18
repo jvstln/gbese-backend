@@ -42,6 +42,16 @@ class UserController {
       data: users,
     });
   }
+
+  async getAllUsers(req: Request, res: Response) {
+    const users = await userService.getUsers();
+
+    res.json({
+      success: true,
+      message: "Users fetched successfully",
+      data: users,
+    });
+  }
 }
 
 export const userController = new UserController();
