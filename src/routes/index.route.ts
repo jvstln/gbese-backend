@@ -17,7 +17,7 @@ indexRouter.get("", (_req, res) => {
 
 // For all authenticated routes
 indexRouter.use(
-  ["/users", "/debt-requests", "/accounts", "/transactions", "/web3"],
+  ["/users", "/debt-requests", "/accounts", "/transactions"],
   authMiddleware.handleSession
 );
 

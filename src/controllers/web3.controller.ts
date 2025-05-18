@@ -41,7 +41,6 @@ class Web3Controller {
 
     try {
       const issuedAt = Math.floor(Date.now() / 1000);
-
       const domain = {
         name: "KYCVerifier",
         version: "1",
