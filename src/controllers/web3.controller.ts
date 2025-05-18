@@ -6,7 +6,6 @@ import GbeseTokenABI from "../abi/GbeseToken.json";
 import { APIError } from "better-auth/api";
 import { Web3Withdraw } from "../types/web3.type";
 import Decimal from "decimal.js";
-import { accountService } from "../services/account.service";
 import { transactionService } from "../services/transaction.service";
 import {
   TransactionCategories,
@@ -62,6 +61,10 @@ class Web3Controller {
       const tx = await this.kycContract.verifyKYC(wallet, issuedAt, signature);
       const receipt = await tx.wait();
 
+      // Save  web3 KYC verification status to database
+      req.userSession!.user.web3KycVerified = true;
+      await req.userSession!.user.save();
+
       res.json({
         success: true,
         txHash: receipt.transactionHash,
@@ -84,16 +87,8 @@ class Web3Controller {
       const { walletAddress, amountNGN, description } = req.body;
 
       const dbTransaction = await mongoose.connection.transaction(async () => {
-        // Get the user account document
-        const account = await accountService.getAccount({
-          userId: req.userSession!.user._id,
-        });
-
-        if (!account) {
-          throw new APIError("BAD_REQUEST", {
-            message: "User Account not found",
-          });
-        }
+        // Retrieve user account from auth middleware
+        const account = req.userSession!.account;
 
         // Check and validate off‐chain NGN balance
         const balanceNGN = account.balance;

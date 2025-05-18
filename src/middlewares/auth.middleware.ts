@@ -9,6 +9,8 @@ class AuthMiddleware {
   async handleSession(req: Request, res: Response, next: NextFunction) {
     const sessionData = await authService.getSession(req);
 
+    console.log(req.cookies);
+
     if (!sessionData) {
       throw new APIError("UNAUTHORIZED", { message: "User not logged in" });
     }

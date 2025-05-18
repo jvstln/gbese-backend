@@ -26,6 +26,7 @@ export interface User extends UserUpdate {
   account: AccountDocument;
   image: string;
   emailVerified: boolean;
+  web3KycVerified: boolean;
 }
 
 export interface UserDocument extends mongoose.HydratedDocument<User> {

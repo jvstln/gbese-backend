@@ -44,6 +44,10 @@ const userSchema = new Schema<User>(
       type: Boolean,
       default: false,
     },
+    web3KycVerified: {
+      type: Boolean,
+      default: false,
+    },
     firstName: {
       type: String,
       required: [true, "Firstname is required"],
