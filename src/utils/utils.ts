@@ -108,3 +108,19 @@ export const getAxiosError = (
     ? error.message
     : defaultMessage;
 };
+
+export function normalizeSearchParams(
+  obj: Record<string, any>
+): [string, string][] {
+  const entries: [string, string][] = [];
+
+  for (const [key, value] of Object.entries(obj)) {
+    if (Array.isArray(value)) {
+      value.forEach((val) => entries.push([key, val]));
+    } else {
+      entries.push([key, String(value)]);
+    }
+  }
+
+  return entries;
+}

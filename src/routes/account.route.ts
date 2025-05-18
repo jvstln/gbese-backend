@@ -9,11 +9,8 @@ import {
 import { transferController } from "../controllers/transfer.controller";
 import { authMiddleware } from "../middlewares/auth.middleware";
 import { paystackController } from "../controllers/paystack.controller";
-import { loanRouter } from "./loan.route";
 
 export const accountRouter = express.Router();
-
-accountRouter.use("/loans", loanRouter);
 
 accountRouter.get("/me", accountController.getUserAccount);
 
