@@ -39,7 +39,7 @@ export interface BorrowLoan {
   account: AccountDocument;
   amount: string;
   durationInDays: number;
-  description?: string;
+  description: string;
 }
 
 export interface PayLoanUsingIds {

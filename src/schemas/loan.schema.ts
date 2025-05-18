@@ -5,7 +5,7 @@ import { LoanStatuses } from "../types/loan.type";
 export const borrowLoanSchema = Joi.object({
   amount: amountSchema,
   durationInDays: Joi.number().min(1).required(),
-  description: Joi.string().optional(),
+  description: Joi.string().max(50),
 });
 
 export const payLoanBodySchema = Joi.object({
